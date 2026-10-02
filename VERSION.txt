@@ -1,2 +1,2 @@
-ALE ATENCIO R9.18.204
-Corrección definitiva del checkbox “Incluir copia cedible” en Emitir documento. Conserva todos los cambios de R9.18.203.
+ALE ATENCIO R9.18.205
+Autocompletado del receptor por RUT en Emitir documento usando la base de Clientes. Completa razón social, giro, dirección, comuna y ciudad sin cambiar la emisión tributaria.

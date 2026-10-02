@@ -1,3 +1,4 @@
+// ALE ATENCIO R9.18.205 · Receptor DTE autocompleta por RUT desde Clientes
 // ALE ATENCIO R9.18.129 · sidebar cache isolation
 // R9.18.125-MANTENEDOR-FOLIOS
 // ALE ATENCIO R9.18.108 · Pedidos scroll/acciones + Clientes ciudad/comuna + Facturación tabla/pedido público
@@ -20,13 +21,14 @@ function orderDeliveryFromClient(value){const x=String(value||"").trim().toUpper
 async function hydrateClientByRut({rutSelector,statusSelector,fields={},mode="overwrite"}){
   const input=$(rutSelector);if(!input)return null;const raw=input.value;if(!raw||!isValidRutChile(raw)){if(raw)setClientLookupState(statusSelector,"RUT inválido. Revisa el dígito verificador.","error");else setClientLookupState(statusSelector,"Ingresa un RUT válido para buscar en Clientes.");return null}
   input.value=formatRutChile(raw);const seq=(clientLookupSeq.get(rutSelector)||0)+1;clientLookupSeq.set(rutSelector,seq);setClientLookupState(statusSelector,"Buscando cliente…","loading");
-  try{const client=await fetchClientByRut(input.value);if(clientLookupSeq.get(rutSelector)!==seq)return null;if(!client){setClientLookupState(statusSelector,"RUT nuevo: al guardar quedará registrado en Clientes.","new");return null}
+  try{const client=await fetchClientByRut(input.value);if(clientLookupSeq.get(rutSelector)!==seq)return null;input.dataset.clientLookupResolvedRut=normalizeRutChile(input.value);if(!client){setClientLookupState(statusSelector,"RUT nuevo: al guardar quedará registrado en Clientes.","new");return null}
     const assign=(selector,value)=>{const el=$(selector);if(!el||value===undefined||value===null)return;if(mode==="blank"&&String(el.value||"").trim())return;el.value=String(value)};
-    if(fields.name)assign(fields.name,client.nombre||"");if(fields.phone)assign(fields.phone,client.telefono||"");if(fields.email)assign(fields.email,client.email||"");if(fields.address)assign(fields.address,client.direccion||"");if(fields.commune)assign(fields.commune,client.comuna||"");if(fields.delivery){const el=$(fields.delivery);if(el&&(mode!=="blank"||!String(el.value||"").trim()))el.value=orderDeliveryFromClient(client.tipo_transporte)}
+    if(fields.name)assign(fields.name,client.nombre||"");if(fields.businessName)assign(fields.businessName,client.razon_social||client.nombre||"");if(fields.activity)assign(fields.activity,client.giro||"");if(fields.phone)assign(fields.phone,client.telefono||"");if(fields.email)assign(fields.email,client.email||"");if(fields.address)assign(fields.address,client.direccion||"");if(fields.commune)assign(fields.commune,client.comuna||"");if(fields.city)assign(fields.city,client.ciudad||"");if(fields.delivery){const el=$(fields.delivery);if(el&&(mode!=="blank"||!String(el.value||"").trim()))el.value=orderDeliveryFromClient(client.tipo_transporte)}
     setClientLookupState(statusSelector,`Cliente encontrado${client.numero_cliente?` · ${client.numero_cliente}`:""}. Datos precargados.`,"found");return client;
   }catch(err){console.warn("client lookup",err);if(clientLookupSeq.get(rutSelector)===seq)setClientLookupState(statusSelector,"No fue posible consultar Clientes. Puedes continuar y guardar.","error");return null}
 }
-function wireClientRutLookup({rutSelector,statusSelector,fields,mode="overwrite",guard=null}){const el=$(rutSelector);if(!el)return;wireRutInput(rutSelector);const run=()=>{if(typeof guard==="function"&&!guard())return;hydrateClientByRut({rutSelector,statusSelector,fields,mode})};el.addEventListener("blur",run);el.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();run()}});el.addEventListener("input",()=>{if(!el.value)setClientLookupState(statusSelector,"Ingresa un RUT válido para buscar en Clientes.")})}
+const clientLookupTimers=new Map();
+function wireClientRutLookup({rutSelector,statusSelector,fields,mode="overwrite",guard=null,auto=false,autoDelay=350,clearFieldsOnRutChange=false}){const el=$(rutSelector);if(!el)return;wireRutInput(rutSelector);const run=()=>{if(typeof guard==="function"&&!guard())return;hydrateClientByRut({rutSelector,statusSelector,fields,mode})};const clearMappedFields=()=>{if(!clearFieldsOnRutChange)return;for(const [key,selector] of Object.entries(fields||{})){if(key==="delivery"||!selector)continue;const field=$(selector);if(field)field.value=""}};el.addEventListener("blur",()=>{clearTimeout(clientLookupTimers.get(rutSelector));run()});el.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();clearTimeout(clientLookupTimers.get(rutSelector));run()}});el.addEventListener("input",()=>{clearTimeout(clientLookupTimers.get(rutSelector));const resolved=String(el.dataset.clientLookupResolvedRut||"");const current=normalizeRutChile(el.value);if(resolved&&resolved!==current){clearMappedFields();delete el.dataset.clientLookupResolvedRut}if(!el.value){setClientLookupState(statusSelector,"Ingresa un RUT válido para buscar en Clientes.");return}if(auto&&isValidRutChile(el.value)){const timer=setTimeout(run,Math.max(150,Number(autoDelay)||350));clientLookupTimers.set(rutSelector,timer)}})}
 
 function rutSearchMatch(value,query){
   const candidate=normalizeRutChile(query);
@@ -3515,7 +3517,7 @@ async function loadSiiOrderData(){
   const ref=$("#siiPedidoId").value.trim();if(!ref)return toast("Ingresa el ID, N.º de pedido o solo el número; por ejemplo 24");
   const out=window.FacturacionAPI?await FacturacionAPI.orderPreview(ref,token):await SiiAPI.orderPreview(ref,token),o=out?.pedido||{};if(!o?.id)throw new Error("PEDIDO_NO_ENCONTRADO");
   siiLoadedOrderId=String(o.id);siiLoadedOrderDocs=Array.isArray(out.documentos_existentes)?out.documentos_existentes:[];siiLoadedOrderItems=Array.isArray(out.items)?out.items:[];
-  $("#siiPedidoId").value=o.numero_pedido||ref;$("#siiRutReceptor").value=o.rut||"";$("#siiRazonReceptor").value=o.razon_social||o.nombre||"";$("#siiGiroReceptor").value=o.giro||"";$("#siiDireccionReceptor").value=o.direccion||"";$("#siiComunaReceptor").value=o.comuna||"";$("#siiCiudadReceptor").value=o.ciudad||"";
+  $("#siiPedidoId").value=o.numero_pedido||ref;$("#siiRutReceptor").value=o.rut||"";if($("#siiRutReceptor"))$("#siiRutReceptor").dataset.clientLookupResolvedRut=normalizeRutChile(o.rut||"");$("#siiRazonReceptor").value=o.razon_social||o.nombre||"";$("#siiGiroReceptor").value=o.giro||"";$("#siiDireccionReceptor").value=o.direccion||"";$("#siiComunaReceptor").value=o.comuna||"";$("#siiCiudadReceptor").value=o.ciudad||"";
   const preview=$("#siiOrderPreview");if(preview){
     const previewTipo=Number($("#siiTipoDte").value||0),fiscalReceiver=[33,34,56,61].includes(previewTipo),missing=(fiscalReceiver?[!o.rut&&"RUT",!($("#siiRazonReceptor").value)&&"razón social",!o.giro&&"giro",!o.direccion&&"dirección",!o.comuna&&"comuna"]:[]).filter(Boolean),docs=siiLoadedOrderDocs.filter(x=>SINGLE_SII_ORDER_TYPES.has(Number(x.tipo_dte)));
     const giroInfo=fiscalReceiver?(o.giro_desde_clientes?`<small class="ok"><i class="bi bi-database-check"></i> Giro cargado desde el maestro de Clientes.</small>`:o.cliente_en_registro?`<small class="warn"><i class="bi bi-database-exclamation"></i> El cliente existe en Clientes, pero no tiene Giro registrado. Complétalo aquí; al emitir quedará guardado en su ficha.</small>`:`<small class="warn"><i class="bi bi-person-plus"></i> Este RUT aún no está en Clientes. El Giro se dejó en blanco. Completa los datos tributarios y, al emitir, el cliente será creado y vinculado al pedido.</small>`):`<small class="ok"><i class="bi bi-receipt-cutoff"></i> Boleta 39/41: el Giro del receptor no forma parte del XML. Si no hay RUT, el backend puede usar el RUT genérico 66.666.666-6 permitido para venta/servicio no periódico.</small>`;
@@ -3699,6 +3701,15 @@ $("#siiOpenFolioPortal")?.addEventListener("click",openSiiFoliosPortal);
 $("#siiTestAuth")?.addEventListener("click",e=>busy(e.currentTarget,async()=>{try{const out=await SiiAPI.testAuth(token);toast(`✓ Autenticación DTE clásico OK · ${out.ambiente}`)}catch(err){toast(`✕ ${err.message||err}`)}}));
 $("#siiTestBoletaAuth")?.addEventListener("click",e=>busy(e.currentTarget,async()=>{try{const out=await SiiAPI.testBoletaAuth(token);toast(`✓ API Boleta SII OK · ${out.ambiente} · ${out.host}`)}catch(err){toast(`✕ ${err.message||err}`)}}));
 $("#siiLoadOrder")?.addEventListener("click",e=>busy(e.currentTarget,async()=>{try{await loadSiiOrderData()}catch(err){console.warn(err);toast(`✕ ${err.message||err}`)}}));
+wireClientRutLookup({
+  rutSelector:"#siiRutReceptor",
+  statusSelector:"#siiClientLookupState",
+  fields:{businessName:"#siiRazonReceptor",activity:"#siiGiroReceptor",address:"#siiDireccionReceptor",commune:"#siiComunaReceptor",city:"#siiCiudadReceptor"},
+  mode:"overwrite",
+  auto:true,
+  autoDelay:320,
+  clearFieldsOnRutChange:true
+});
 $("#siiEmitDte")?.addEventListener("click",e=>busy(e.currentTarget,async()=>{try{await emitSiiDte()}catch(err){console.warn(err);toast(`✕ ${err.message||err}`)}}));
 $("#siiTipoDte")?.addEventListener("change",toggleSiiReferenceFields);$("#siiIssueMode")?.addEventListener("change",updateSiiIssueModeUi);$("#siiBoletaPrintFormat")?.addEventListener("change",updateSiiIssueModeUi);
 $("#siiPedidoId")?.addEventListener("input",()=>{siiLoadedOrderId=null;siiLoadedOrderDocs=[];siiLoadedOrderItems=[];const p=$("#siiOrderPreview");if(p){p.classList.add("hidden");p.innerHTML=""}updateSiiIssueModeUi()});
