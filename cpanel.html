@@ -8777,9 +8777,12 @@ body > #requestClientEditor:not(.hidden) .editor-actions{
         <label class="field-group fcl-guide-field emit-quarter hidden"><span>RUT transportista</span><input id="fclRutTrans" placeholder="RUT"></label>
       </div>
 
-      <label class="sii-cedible-option hidden" id="siiCedibleField" for="siiIncludeCedible">
-        <span class="sii-cedible-check"><input id="siiIncludeCedible" type="checkbox"><span><strong>Incluir copia cedible</strong></span></span>
-      </label>
+      <div class="sii-cedible-option hidden" id="siiCedibleField">
+        <label class="sii-cedible-check" for="siiIncludeCedible">
+          <input id="siiIncludeCedible" type="checkbox">
+          <span class="sii-cedible-copy"><strong>Incluir copia cedible</strong></span>
+        </label>
+      </div>
       <div class="editor-actions sii-emit-actions"><button class="btn btn-primary" id="siiEmitDte" type="button"><i class="bi bi-receipt"></i> Emitir DTE</button><button class="btn btn-light" type="button" data-sii-close>Cancelar</button></div>
     </div>
 

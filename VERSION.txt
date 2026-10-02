@@ -1,0 +1,2 @@
+ALE ATENCIO R9.18.204
+Corrección definitiva del checkbox “Incluir copia cedible” en Emitir documento. Conserva todos los cambios de R9.18.203.

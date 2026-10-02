@@ -5903,3 +5903,95 @@ body > #requestClientEditor{
   max-width:min(230px,calc(100vw - 40px));
   box-shadow:0 8px 22px rgba(15,23,42,.12);
 }
+
+/* =====================================================================
+   R9.18.204 · FIX DEFINITIVO CHECKBOX CEDIBLE EN EMISOR DTE
+   El control queda fuera del grid de inputs y conserva tamaño nativo.
+   ===================================================================== */
+#siiEmitModal #siiCedibleField{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  margin:12px 0 0!important;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+  overflow:visible!important;
+  box-sizing:border-box!important;
+}
+#siiEmitModal #siiCedibleField.hidden{display:none!important}
+#siiEmitModal #siiCedibleField .sii-cedible-check{
+  display:inline-flex!important;
+  flex:0 1 auto!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  gap:9px!important;
+  width:auto!important;
+  max-width:100%!important;
+  min-width:0!important;
+  min-height:40px!important;
+  margin:0!important;
+  padding:9px 12px!important;
+  border:1px solid #d9dee4!important;
+  border-radius:10px!important;
+  background:#fbfcfd!important;
+  color:#3e322e!important;
+  box-sizing:border-box!important;
+  cursor:pointer!important;
+  white-space:normal!important;
+  overflow:visible!important;
+}
+#siiEmitModal #siiIncludeCedible,
+#siiEmitModal #siiIncludeCedible[type="checkbox"]{
+  appearance:auto!important;
+  -webkit-appearance:checkbox!important;
+  display:block!important;
+  flex:0 0 18px!important;
+  width:18px!important;
+  min-width:18px!important;
+  max-width:18px!important;
+  height:18px!important;
+  min-height:18px!important;
+  max-height:18px!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:3px!important;
+  box-shadow:none!important;
+  background:transparent!important;
+  vertical-align:middle!important;
+}
+#siiEmitModal #siiCedibleField .sii-cedible-copy{
+  display:block!important;
+  flex:0 1 auto!important;
+  width:auto!important;
+  min-width:0!important;
+  max-width:100%!important;
+  margin:0!important;
+  padding:0!important;
+  color:#3e322e!important;
+  line-height:1.25!important;
+  overflow:visible!important;
+}
+#siiEmitModal #siiCedibleField .sii-cedible-copy strong{
+  display:block!important;
+  margin:0!important;
+  padding:0!important;
+  font-size:12px!important;
+  font-weight:800!important;
+  line-height:1.25!important;
+  white-space:normal!important;
+  word-break:normal!important;
+  overflow-wrap:normal!important;
+}
+@media(max-width:640px){
+  #siiEmitModal #siiCedibleField{margin-top:10px!important}
+  #siiEmitModal #siiCedibleField .sii-cedible-check{
+    width:100%!important;
+    flex:1 1 100%!important;
+    min-height:42px!important;
+  }
+}
