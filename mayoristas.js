@@ -1,4 +1,4 @@
-// ALE ATENCIO R9.18.219 · Multi-DTE por pedido + foto de perfil proporcional
+// ALE ATENCIO R9.18.220 · Avatar adaptativo sin deformación
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
 const money=n=>new Intl.NumberFormat('es-CL',{style:'currency',currency:'CLP',maximumFractionDigits:0}).format(Number(n||0));
@@ -41,7 +41,21 @@ $('#whLoginForm').onsubmit=async e=>{e.preventDefault();const btn=e.submitter||e
 
 async function bootstrap(){if(!token)return showAuth();try{const out=await AleAPI.post('mayoristabootstrap',{},token);state=out;showPortal();render()}catch(e){console.warn(e);const code=String(e?.message||'');if(/SESION_|PERFIL_MAYORISTA|MAYORISTA_NO_APROBADO|MAYORISTA_SIN_ASIGNACION|LISTA_PRECIO/.test(code)){localStorage.removeItem('aleMayoristaToken');showAuth('Tu acceso Mayorista no está habilitado o la sesión venció.')}else toast('No fue posible actualizar el portal')}}
 
-function render(){const c=state.client||{},l=state.priceList||{},k=state.kpis||{},u=state.user||{};$('#whWelcome').textContent=c.razon_social||c.nombre||'Mayorista';$('#whListBadge').textContent=l.nombre||'Lista autorizada';renderTierBadge();$('#kOrders').textContent=k.orders||0;$('#kTotal').textContent=money(k.total);$('#kPaid').textContent=k.paid||0;$('#kPending').textContent=k.pending||0;$('#whAddress').value=c.direccion||'';$('#whCommune').value=c.comuna||'';if($('#whCity'))$('#whCity').value=c.ciudad||'';const avatar=u.profile_url||'favicon.png';$('#whHeaderAvatar').src=avatar;$('#whProfilePhoto').src=avatar;populateCatalogFilters();populateOrderFilters();renderProducts();renderOrders();renderCredit();renderDocuments();renderProfile();renderNotifications();renderCart()}
+function applyWhProfileImage(img,src){
+  if(!img)return;
+  const fallback='favicon.png';
+  img.classList.remove('wh-profile-wide');
+  img.onload=()=>{
+    const w=Number(img.naturalWidth||0),h=Number(img.naturalHeight||0);
+    const ratio=h>0?w/h:1;
+    img.classList.toggle('wh-profile-wide',ratio>=1.35);
+  };
+  img.onerror=()=>{img.classList.remove('wh-profile-wide');if(!String(img.src||'').endsWith(fallback))img.src=fallback};
+  img.src=src||fallback;
+  if(img.complete&&img.naturalWidth)img.onload();
+}
+function setWhProfileImages(src){applyWhProfileImage($('#whHeaderAvatar'),src);applyWhProfileImage($('#whProfilePhoto'),src)}
+function render(){const c=state.client||{},l=state.priceList||{},k=state.kpis||{},u=state.user||{};$('#whWelcome').textContent=c.razon_social||c.nombre||'Mayorista';$('#whListBadge').textContent=l.nombre||'Lista autorizada';renderTierBadge();$('#kOrders').textContent=k.orders||0;$('#kTotal').textContent=money(k.total);$('#kPaid').textContent=k.paid||0;$('#kPending').textContent=k.pending||0;$('#whAddress').value=c.direccion||'';$('#whCommune').value=c.comuna||'';if($('#whCity'))$('#whCity').value=c.ciudad||'';const avatar=u.profile_url||'favicon.png';setWhProfileImages(avatar);populateCatalogFilters();populateOrderFilters();renderProducts();renderOrders();renderCredit();renderDocuments();renderProfile();renderNotifications();renderCart()}
 
 function populateCatalogFilters(){const sel=$('#whCategory'),cur=sel.value,cats=[...new Set((state.products||[]).map(p=>String(p.categoria_nombre||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'es'));sel.innerHTML='<option value="">Todas</option>'+cats.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');if(cats.includes(cur))sel.value=cur}
 function populateOrderFilters(){for(const [id,key] of [['#whOrderStatus','estado'],['#whOrderPaymentStatus','estado_pago']]){const sel=$(id),cur=sel.value,vals=[...new Set((state.orders||[]).map(o=>String(o[key]||'').trim()).filter(Boolean))].sort();sel.innerHTML='<option value="">Todos</option>'+vals.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('');if(vals.includes(cur))sel.value=cur}}
@@ -316,7 +330,7 @@ function openWhProfileEdit(){const c=state.client||{};$('#whEditRut').value=c.ru
 function closeWhProfileEdit(){const m=$('#whProfileEditModal');if(!m)return;m.classList.remove('open');m.setAttribute('aria-hidden','true')}
 $('#whEditProfile').onclick=openWhProfileEdit;$('#whProfileEditClose').onclick=closeWhProfileEdit;$('#whProfileEditModal').onclick=e=>{if(e.target===$('#whProfileEditModal'))closeWhProfileEdit()};
 $('#whSaveProfileData').onclick=e=>busy(e.currentTarget,async()=>{const payload={razon_social:$('#whEditBusiness').value,nombre:$('#whEditName').value,giro:$('#whEditGiro').value,telefono:$('#whEditPhone').value,email:$('#whEditEmail').value,direccion:$('#whEditAddress').value,comuna:$('#whEditCommune').value,ciudad:$('#whEditCity').value};if(!payload.razon_social.trim()||!payload.nombre.trim()||!payload.telefono.trim()||!payload.email.trim()){toast('Completa razón social, contacto, teléfono y correo');return}try{const out=await AleAPI.post('mayoristaprofileupdate',payload,token);state.client=out.client||state.client;render();closeWhProfileEdit();toast('✓ Datos actualizados')}catch(err){console.warn(err);toast('No fue posible actualizar tus datos')}},'Guardando…');
-$('#whProfileFile').onchange=e=>{const f=e.target.files?.[0];if(f)$('#whProfilePhoto').src=URL.createObjectURL(f)};$('#whSaveProfilePhoto').onclick=e=>busy(e.currentTarget,async()=>{const f=$('#whProfileFile').files?.[0];if(!f){toast('Selecciona una imagen');return}if(f.size>5*1024*1024){toast('La imagen supera 5 MB');return}try{const of=await optimizeWhImage(f);const out=await AleAPI.post('mayoristaprofilephoto',{data_url:await fileDataUrl(of)},token);state.user={...(state.user||{}),...(out.user||{}),profile_url:out.profile_url||out.user?.profile_url};$('#whHeaderAvatar').src=state.user.profile_url||'favicon.png';$('#whProfilePhoto').src=state.user.profile_url||'favicon.png';$('#whProfileFile').value='';toast('✓ Foto de perfil actualizada')}catch(err){console.warn(err);toast('No fue posible guardar la foto')}},'Guardando…');
+$('#whProfileFile').onchange=e=>{const f=e.target.files?.[0];if(f){const url=URL.createObjectURL(f);applyWhProfileImage($('#whProfilePhoto'),url)}};$('#whSaveProfilePhoto').onclick=e=>busy(e.currentTarget,async()=>{const f=$('#whProfileFile').files?.[0];if(!f){toast('Selecciona una imagen');return}if(f.size>5*1024*1024){toast('La imagen supera 5 MB');return}try{const of=await optimizeWhImage(f);const out=await AleAPI.post('mayoristaprofilephoto',{data_url:await fileDataUrl(of)},token);state.user={...(state.user||{}),...(out.user||{}),profile_url:out.profile_url||out.user?.profile_url};setWhProfileImages(state.user.profile_url||'favicon.png');$('#whProfileFile').value='';toast('✓ Foto de perfil actualizada')}catch(err){console.warn(err);toast('No fue posible guardar la foto')}},'Guardando…');
 
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){if($('#whProductModal').classList.contains('open'))closeWhProduct();if($('#whOrderModal').classList.contains('open'))closeOrderModal()}});
 bootstrap();

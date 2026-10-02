@@ -647,3 +647,49 @@ body.wh-modal-open{overflow:hidden}
 .order-detail-tax-main{display:grid;gap:2px;min-width:0}.order-detail-tax-main span{font-size:11px;color:#8d5060;font-weight:900;text-transform:uppercase;letter-spacing:.035em}.order-detail-tax-main strong{font-size:14px;color:#3f3632}.order-detail-tax-main small{font-size:10px;color:#8b7e78}
 .order-detail-tax-docs a{display:inline-flex;align-items:center;gap:6px;text-decoration:none;background:#6f4650;color:#fff;padding:8px 10px;border-radius:9px;font-weight:800;font-size:11px;white-space:nowrap}.tax-doc-count{display:inline-grid;place-items:center;min-width:22px;height:22px;padding:0 6px;border-radius:999px;background:#f4ece9;color:#6f4650;font:800 11px Manrope,system-ui,sans-serif;vertical-align:3px}.empty-state.compact{padding:14px;font-size:12px}
 @media(max-width:720px){.order-tax-docs{min-width:150px;max-width:260px}.order-detail-tax-docs article{align-items:flex-start;flex-direction:column}.order-detail-tax-docs a{width:100%;justify-content:center}}
+
+
+/* R9.18.220 · Avatar adaptativo: fotos normales circulares, logos horizontales legibles */
+.wh-header-avatar{
+  width:42px!important;
+  height:42px!important;
+  padding:0!important;
+  border-radius:50%!important;
+  object-fit:cover!important;
+  object-position:center!important;
+  background:#fff!important;
+  transition:width .16s ease,height .16s ease,border-radius .16s ease!important;
+}
+.wh-header-avatar.wh-profile-wide{
+  width:66px!important;
+  height:42px!important;
+  border-radius:12px!important;
+  object-fit:contain!important;
+  padding:2px!important;
+}
+.profile-photo-card img{
+  width:124px!important;
+  height:124px!important;
+  padding:0!important;
+  border-radius:50%!important;
+  object-fit:cover!important;
+  object-position:center!important;
+  background:#fff!important;
+}
+.profile-photo-card img.wh-profile-wide{
+  width:168px!important;
+  height:112px!important;
+  border-radius:16px!important;
+  object-fit:contain!important;
+  padding:3px!important;
+}
+.profile-photo-card:has(img.wh-profile-wide){grid-template-columns:176px 1fr!important}
+@media(max-width:720px){
+  .wh-header-avatar.wh-profile-wide{width:58px!important;height:40px!important}
+  .profile-photo-card:has(img.wh-profile-wide){grid-template-columns:148px 1fr!important}
+  .profile-photo-card img.wh-profile-wide{width:140px!important;height:96px!important}
+}
+@media(max-width:480px){
+  .profile-photo-card:has(img.wh-profile-wide){grid-template-columns:1fr!important}
+  .profile-photo-card img.wh-profile-wide{width:min(220px,72vw)!important;height:120px!important}
+}
