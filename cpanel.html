@@ -7497,6 +7497,7 @@ body > #requestClientEditor:not(.hidden) .editor-actions{
           <button data-view="requests"><i class="bi bi-clipboard-heart"></i> Solicitudes</button>
           <button data-view="quotes"><i class="bi bi-receipt-cutoff"></i> Cotizaciones</button>
           <button data-view="clients"><i class="bi bi-person-vcard"></i> Clientes</button>
+          <button data-view="sellers"><i class="bi bi-person-badge"></i> Vendedores</button>
         </div>
       </details>
 
@@ -7607,7 +7608,7 @@ body > #requestClientEditor:not(.hidden) .editor-actions{
 
         <div class="dash-kpi-grid">
           <button class="dash-kpi" type="button" data-dash-action="sales"><span class="dash-kpi-icon"><i class="bi bi-cash-coin"></i></span><small>Ventas Totales</small><strong id="dashKpiSales">$0</strong><em id="dashKpiSalesMeta">Período seleccionado</em><span class="dash-kpi-spark" id="dashSparkSales"></span></button>
-          <button class="dash-kpi" type="button" data-dash-action="orders"><span class="dash-kpi-icon"><i class="bi bi-cart3"></i></span><small>Pedidos</small><strong id="dashKpiOrders">0</strong><em>Ventas pagadas</em><span class="dash-kpi-spark" id="dashSparkOrders"></span></button>
+          <button class="dash-kpi" type="button" data-dash-action="orders"><span class="dash-kpi-icon"><i class="bi bi-cart3"></i></span><small>Pedidos</small><strong id="dashKpiOrders">0</strong><em>Pedidos no cancelados</em><span class="dash-kpi-spark" id="dashSparkOrders"></span></button>
           <button class="dash-kpi" type="button" data-dash-action="ticket"><span class="dash-kpi-icon"><i class="bi bi-ticket-perforated"></i></span><small>Ticket Promedio</small><strong id="dashKpiTicket">$0</strong><em>Promedio por pedido</em><span class="dash-kpi-spark" id="dashSparkTicket"></span></button>
           <button class="dash-kpi" type="button" data-dash-action="visits"><span class="dash-kpi-icon"><i class="bi bi-cursor"></i></span><small>Visitas Web</small><strong id="dashKpiVisits">0</strong><em id="dashKpiVisitors">0 visitantes únicos</em><span class="dash-kpi-spark" id="dashSparkVisits"></span></button>
           <button class="dash-kpi" type="button" data-dash-action="conversion"><span class="dash-kpi-icon"><i class="bi bi-bar-chart-line"></i></span><small>Conversión</small><strong id="dashKpiConversion">0%</strong><em>Pedidos / visitas</em><span class="dash-kpi-spark" id="dashSparkConversion"></span></button>
@@ -7618,7 +7619,7 @@ body > #requestClientEditor:not(.hidden) .editor-actions{
           <div class="dash-column dash-column-left">
             <article class="dash-panel"><div class="dash-panel-head"><div><span class="eyebrow">Ventas</span><h3>Ventas Mensuales</h3></div><span class="dash-mini-badge">CLP</span></div><div class="dash-bars" id="dashSalesChart"></div></article>
             <article class="dash-panel"><div class="dash-panel-head"><div><span class="eyebrow">Tráfico</span><h3>Visitas Web</h3></div><span class="dash-mini-badge" id="dashVisitsPeriodLabel">Año</span></div><div class="dash-line-chart" id="dashVisitsChart"></div></article>
-            <article class="dash-panel"><div class="dash-panel-head"><div><span class="eyebrow">Catálogo</span><h3>Top Productos Más Vendidos</h3></div></div><div class="dash-ranking" id="dashTopProducts"><div class="dash-empty">Cargando…</div></div></article>
+            <article class="dash-panel"><div class="dash-panel-head"><div><span class="eyebrow">Catálogo</span><h3 id="dashTopProductsTitle">Top Productos Más Vendidos</h3></div></div><div class="dash-ranking" id="dashTopProducts"><div class="dash-empty">Cargando…</div></div></article>
           </div>
 
           <article class="dash-panel dash-map-panel">
@@ -7642,7 +7643,7 @@ body > #requestClientEditor:not(.hidden) .editor-actions{
           </div>
         </div>
 
-        <div class="dash-status" id="dashStatus"><i class="bi bi-shield-check"></i><span>Los datos de ventas consideran pedidos pagados. Las visitas web comienzan a registrarse al instalar el SQL y desplegar la Edge Function incluida en este ZIP.</span></div>
+        <div class="dash-status" id="dashStatus"><i class="bi bi-shield-check"></i><span>Ventas: pedidos pagados + ventas directas emitidas. Pedidos: actividad no cancelada del período. Las visitas se obtienen de la analítica web.</span></div>
       </div>
     </section>
 
@@ -8104,6 +8105,27 @@ body > #requestClientEditor:not(.hidden) .editor-actions{
       <div class="admin-card"><div class="card-head"><div><span class="eyebrow">Trazabilidad</span><h3>Movimientos de crédito</h3></div></div><div class="table-wrap" id="wholesaleCreditMovementsTable"></div></div>
     </section>
 
+
+
+    <section class="admin-view" id="view-sellers">
+      <div class="admin-card"><div class="card-head"><div><span class="eyebrow">Equipo comercial</span><h2>Vendedores</h2></div><div class="card-head-actions"><button class="btn btn-primary" id="newSeller" type="button"><i class="bi bi-plus-lg"></i> Nuevo vendedor</button></div></div>
+        <div class="table-wrap" id="sellersTable"></div>
+        <div class="editor hidden" id="sellerEditor" role="dialog" aria-modal="true" aria-labelledby="sellerEditorTitle">
+          <div class="editor-modal-head"><div><span class="eyebrow">Equipo comercial</span><h3 id="sellerEditorTitle">Nuevo vendedor</h3></div><button type="button" class="editor-close-x" id="closeSellerEditor">×</button></div>
+          <input type="hidden" id="sellerId">
+          <div class="form-grid">
+            <label>Código<input id="sellerCode" placeholder="VEN-01"></label>
+            <label>Nombre<input id="sellerName" placeholder="Nombre del vendedor"></label>
+            <label>RUT<input id="sellerRut" placeholder="12.345.678-5"></label>
+            <label>Teléfono<input id="sellerPhone" placeholder="+56 9 ..."></label>
+            <label>Correo<input id="sellerEmail" type="email" placeholder="vendedor@empresa.cl"></label>
+            <label>Estado<select id="sellerActive"><option value="SI">Activo</option><option value="NO">Inactivo</option></select></label>
+            <label class="span-2">Observaciones<textarea id="sellerNotes" placeholder="Notas internas del vendedor"></textarea></label>
+          </div>
+          <div class="editor-actions"><button class="btn btn-primary" id="saveSeller" type="button"><i class="bi bi-floppy"></i> Guardar vendedor</button><button class="btn btn-light" id="cancelSeller" type="button">Cancelar</button></div>
+        </div>
+      </div>
+    </section>
 
     <section class="admin-view" id="view-purchases">
       <div class="admin-card sii-shell">
@@ -8740,7 +8762,7 @@ body > #requestClientEditor:not(.hidden) .editor-actions{
       <div class="editor-modal-head"><div><span class="eyebrow">Facturación</span><h3 id="siiEmitModalTitle">Emitir documento</h3></div><button type="button" class="editor-close-x" data-sii-close aria-label="Cerrar">×</button></div>
       <div class="form-grid sii-emit-grid">
         <label class="field-group emit-type"><span>Tipo de documento</span><select id="siiTipoDte"><option value="33">33 · Factura Electrónica</option><option value="34">34 · Factura No Afecta o Exenta Electrónica</option><option value="39">39 · Boleta Electrónica</option><option value="41">41 · Boleta No Afecta o Exenta Electrónica</option><option value="52">52 · Guía de Despacho Electrónica</option><option value="56">56 · Nota de Débito Electrónica</option><option value="61">61 · Nota de Crédito Electrónica</option></select></label>
-        <label class="field-group emit-source"><span>Origen</span><select id="siiSourceMode"><option value="PEDIDO">Desde pedido</option><option value="DIRECTO">Venta manual directa</option></select></label>
+        <label class="field-group emit-source"><span>Origen</span><select id="siiSourceMode"><option value="PEDIDO">Desde pedido</option><option value="DIRECTO">Emisión manual directa</option></select></label>
         <label class="field-group emit-mode"><span>Modo</span><select id="siiIssueMode"><option value="AUTO">Automático</option><option value="PRUEBA_LOCAL">PRUEBA LOCAL</option><option value="SII">CAF oficial / SII</option></select></label>
         <label class="field-group sii-boleta-format-field emit-format hidden"><span>Formato</span><select id="siiBoletaPrintFormat"><option value="TICKET_57">Ticket 57 mm</option><option value="TICKET_58">Ticket 58 mm</option><option value="TICKET_80">Ticket 80 mm</option><option value="A4">A4</option></select></label>
         <label class="field-group emit-order sii-order-source-field"><span>Pedido</span><input id="siiPedidoId" placeholder="N° pedido" inputmode="text" autocomplete="off"></label>
@@ -8750,7 +8772,14 @@ body > #requestClientEditor:not(.hidden) .editor-actions{
         <div class="sii-manual-sale-panel emit-full hidden" id="siiManualSalePanel">
           <div class="sii-manual-stock-row">
             <label class="field-group"><span>Bodega de salida</span><select id="siiManualWarehouse"></select></label>
-            <label class="sii-manual-stock-check" for="siiManualMoveStock"><input id="siiManualMoveStock" type="checkbox" checked><span><strong>Descontar stock de bodega</strong><small>Solo se aplica en esta venta manual directa.</small></span></label>
+            <label class="sii-manual-stock-check is-true" id="siiManualMoveStockBox" for="siiManualMoveStock">
+              <input id="siiManualMoveStock" type="checkbox" checked>
+              <span class="sii-stock-copy">
+                <strong>Movimiento de stock</strong>
+                <small id="siiManualMoveStockText">TRUE · DESCUENTA STOCK · Al emitir este documento manual, se rebajará stock de la bodega seleccionada.</small>
+              </span>
+              <b class="sii-stock-state" id="siiManualMoveStockState">TRUE</b>
+            </label>
           </div>
           <div class="catalog-quick-picker" id="siiManualCatalogPicker">
             <div class="catalog-quick-search"><i class="bi bi-search"></i><input id="siiManualProductSearch" type="search" autocomplete="off" placeholder="Buscar producto por nombre, descripción o código..."></div>
@@ -8759,12 +8788,28 @@ body > #requestClientEditor:not(.hidden) .editor-actions{
           <div class="sii-manual-items" id="siiManualItems"></div>
           <div class="sii-manual-total"><span>Total venta directa</span><strong id="siiManualTotal">$0</strong></div>
         </div>
+        <div class="sii-doc-compact-launch emit-full">
+          <button class="btn btn-light" id="siiOpenDetailsModal" type="button"><i class="bi bi-person-vcard"></i> Datos del receptor y documento</button>
+          <div class="sii-doc-compact-summary" id="siiDetailsSummary">Completa o revisa los datos del receptor, referencias y despacho desde este botón.</div>
+        </div>
+      </div>
+
+      <div class="editor-actions sii-emit-actions"><button class="btn btn-primary" id="siiEmitDte" type="button"><i class="bi bi-receipt"></i> Emitir DTE</button><button class="btn btn-light" type="button" data-sii-close>Cancelar</button></div>
+    </div>
+
+    <div class="editor hidden sii-detail-sheet" id="siiEmitDetailsModal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="siiEmitDetailsTitle">
+      <div class="editor-modal-head"><div><span class="eyebrow">Facturación</span><h3 id="siiEmitDetailsTitle">Datos del receptor y documento</h3><small>Completa aquí los datos tributarios, referencias y opciones adicionales.</small></div><button type="button" class="editor-close-x" id="closeSiiDetailsModal" aria-label="Cerrar">×</button></div>
+      <div class="form-grid sii-emit-grid sii-detail-grid">
         <label class="field-group emit-rut"><span>RUT receptor</span><input id="siiRutReceptor" placeholder="76.123.456-7" inputmode="text" autocomplete="off"></label>
         <label class="field-group emit-name"><span>Razón social</span><input id="siiRazonReceptor" placeholder="Nombre / razón social"></label>
         <label class="field-group emit-giro"><span>Giro</span><input id="siiGiroReceptor" placeholder="Giro receptor"></label>
         <label class="field-group emit-address"><span>Dirección</span><input id="siiDireccionReceptor" placeholder="Dirección tributaria"></label>
         <label class="field-group emit-comuna"><span>Comuna</span><input id="siiComunaReceptor" placeholder="Comuna"></label>
         <label class="field-group emit-city"><span>Ciudad</span><input id="siiCiudadReceptor" placeholder="Ciudad"></label>
+        <label class="field-group emit-half"><span>Teléfono cliente</span><input id="siiTelefonoReceptor" placeholder="+56 9 ..."></label>
+        <label class="field-group emit-half"><span>Vendedor</span><select id="siiVendedorId"><option value="">Sin vendedor asignado</option></select></label>
+        <label class="field-group emit-full"><span>Glosa / Observaciones</span><textarea id="siiObservaciones" maxlength="1000" placeholder="Observaciones que deben acompañar al documento"></textarea></label>
+        <small class="client-rut-lookup-state emit-full" id="siiClientLookupState">Ingresa un RUT válido para buscar en Clientes.</small>
         <label class="field-group sii-reference-field emit-quarter hidden"><span>Tipo DTE ref.</span><input id="siiRefTipo" value="33" maxlength="3"></label>
         <label class="field-group sii-reference-field emit-quarter hidden"><span>Folio ref.</span><input id="siiRefFolio" placeholder="123"></label>
         <label class="field-group sii-reference-field emit-quarter hidden"><span>Fecha ref.</span><input id="siiRefFecha" type="date"></label>
@@ -8776,14 +8821,14 @@ body > #requestClientEditor:not(.hidden) .editor-actions{
         <label class="field-group fcl-guide-field emit-quarter hidden"><span>Patente</span><input id="fclPatente" maxlength="8" placeholder="ABCD12"></label>
         <label class="field-group fcl-guide-field emit-quarter hidden"><span>RUT transportista</span><input id="fclRutTrans" placeholder="RUT"></label>
       </div>
-
       <div class="sii-cedible-option hidden" id="siiCedibleField">
         <label class="sii-cedible-check" for="siiIncludeCedible">
           <input id="siiIncludeCedible" type="checkbox">
-          <span class="sii-cedible-copy"><strong>Incluir copia cedible</strong></span>
+          <span class="sii-cedible-box" aria-hidden="true"><i class="bi bi-check-lg"></i></span>
+          <span class="sii-cedible-text">Incluir copia cedible</span>
         </label>
       </div>
-      <div class="editor-actions sii-emit-actions"><button class="btn btn-primary" id="siiEmitDte" type="button"><i class="bi bi-receipt"></i> Emitir DTE</button><button class="btn btn-light" type="button" data-sii-close>Cancelar</button></div>
+      <div class="editor-actions"><button class="btn btn-primary" id="siiSaveDetailsModal" type="button"><i class="bi bi-check2-circle"></i> Guardar datos</button><button class="btn btn-light" id="cancelSiiDetailsModal" type="button">Cerrar</button></div>
     </div>
 
 

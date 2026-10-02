@@ -153,7 +153,7 @@
       if(!fclGatewayVersionCompatible(ready.version))throw makeError(`Gateway Facturacion.cl incompatible o no disponible (${ready.version||'sin versión'}). Actualiza facturacion-cl-gateway.`);
       if(ready.integration_ready!==true)throw makeError('Falta el esquema base de integración Facturacion.cl (SQL 40). Instálalo antes de emitir.');
       const payload={pedido_id:data.pedido_id,tipo_dte:Number(data.tipo_dte||0),incluir_cedible:Boolean(data.incluir_cedible)};
-      for(const key of ['rut_receptor','razon_social_receptor','giro_receptor','direccion_receptor','comuna_receptor','ciudad_receptor','referencia','monto_nota','tipo_despacho','ind_traslado','transporte','manual_sale','manual_request_id','items','total','bodega_id','mueve_stock'])if(data[key]!==undefined)payload[key]=data[key];
+      for(const key of ['rut_receptor','razon_social_receptor','giro_receptor','direccion_receptor','comuna_receptor','ciudad_receptor','telefono_receptor','vendedor_id','vendedor_nombre','observaciones','referencia','monto_nota','tipo_despacho','ind_traslado','transporte','manual_sale','manual_request_id','items','total','bodega_id','mueve_stock'])if(data[key]!==undefined)payload[key]=data[key];
       const action=data.manual_sale?'emit_manual':'emit_order';
       const out=await rawCall(providerUrl(code),action,payload,token,120000);return{...out,provider_code:code,provider_name:label(code)};
     }

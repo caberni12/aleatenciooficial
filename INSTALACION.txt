@@ -1,0 +1,94 @@
+ALE ATENCIO R9.18.185 — INTEGRACION REST FACTURACION.CL
+
+ACTUALIZACION DEL SISTEMA EXISTENTE (UNA SOLA VEZ)
+Este paquete actualiza la base R9.18.184. No se ha instalado en tu servidor.
+Conserva los módulos, recursos y SQL anteriores del paquete original.
+
+1. En Supabase > SQL Editor ejecutar:
+   INSTALACION_SUPABASE/40_ALE_ATENCIO_SQL_R9_18_185_FACTURACION_CL_INTEGRACION.sql
+   Requiere las tablas de proveedores e historial de los SQL 32 y 35.
+   Instala el guardado cifrado, el registro del XML y la protección contra
+   emisiones duplicadas. No borra documentos ni pedidos.
+
+2. Actualizar estas dos Edge Functions con los index.ts incluidos:
+   - dynamic-processor
+   - facturacion-cl-gateway
+   Mantener Verify JWT desactivado en ambas: validan la sesión propia de
+   ALE ATENCIO y los permisos antes de ejecutar las acciones.
+   Conservar las variables de servidor de Supabase de la instalación actual.
+
+3. Publicar cpanel.html, cpanel.js y facturacion-api.js.
+   Los demás archivos web se conservan. Recargar el cPanel con Ctrl+F5.
+
+4. Iniciar sesión como administrador y abrir:
+   Facturación > Conectar Facturacion.cl
+   También está en Facturación > Proveedores > Facturacion.cl > Editar.
+
+USO: INGRESAR CREDENCIALES Y CONECTAR
+- PRUEBA comienza con RUT 1-9, editable.
+- Escribir Usuario REST y Clave REST entregados por el proveedor.
+- Pulsar Guardar y conectar en la tarjeta del ambiente elegido.
+- El sistema guarda las credenciales cifradas, valida el login y activa
+  Facturacion.cl en ese ambiente. PRUEBA corresponde a CERTIFICACION.
+- Un login rechazado no activa otro proveedor ni cambia el ambiente.
+- El RUT queda visible y editable. Usuario y clave se limpian al guardar.
+  Para reemplazarlos, volver a ingresar los tres datos.
+- PRODUCCION tiene su propio RUT, usuario y clave. Al conectar esa tarjeta,
+  el ambiente activo cambia a PRODUCCION. Usar las credenciales REST
+  productivas que entregue Facturacion.cl.
+- Probar login verifica las credenciales guardadas; no cambia el proveedor
+  ni el ambiente. No guardar contraseñas en config.js.
+
+El guardado usa Supabase Vault y no requiere ALE_MANAGEMENT_TOKEN.
+Las credenciales históricas en Secrets son una alternativa mientras no
+exista un registro en Vault. Eliminar desde cPanel deshabilita ese ambiente,
+incluidas las alternativas anteriores. La clave no se devuelve al cPanel.
+
+EMISION Y CONSULTAS
+- Factura 33/34, boleta 39/41, guía 52 y notas 56/61.
+- Los datos del receptor corregidos se envían al proveedor y se guardan en
+  Clientes cuando corresponde.
+- El RUT 1-9 sirve para el acceso del emisor DEMO. El RUT del receptor debe
+  tener número entre 10000 y 99999999 y dígito verificador válido; se comprueba
+  antes de enviar al proveedor.
+- Las guías requieren patente y RUT del transportista.
+- Las notas requieren tipo, folio y fecha del documento de referencia.
+  Corrección de monto requiere monto explícito; corrección de texto lleva
+  monto cero. Para anulación se toma el total actual del pedido: revisar
+  su coincidencia con el original si el pedido cambió después de emitir.
+- Historial con ambiente, PDF, copia cedible cuando corresponda y XML enviado.
+- Datos ticket descarga Head, Foot y TED en JSON para el componente impresor.
+  Requiere módulo de ticket contratado en Facturacion.cl e impresor compatible.
+  Este paquete no instala un controlador de impresión.
+- El XML descargable es el enviado a integración, no el XML firmado SII.
+
+SI UNA EMISION QUEDA PENDIENTE
+Un corte puede ocurrir después de que el proveedor reciba el documento.
+El sistema conserva INDETERMINADO y bloquea el reenvío automático.
+Revisar el documento en Facturacion.cl y usar Revisar emisión en el historial.
+Indicar el folio confirmado y marcar la confirmación. El sistema consulta
+su PDF y registra el resultado sin enviar una nueva emisión.
+Si el proveedor confirma que no emitió, un administrador debe resolver el
+registro antes de intentar nuevamente; no cambiar el estado a ciegas.
+
+COMPROBACIONES
+- 37 pruebas locales con servicios simulados: XML, montos, receptor, RUT,
+  ambientes, credenciales, conexión, idempotencia, cortes y consultas.
+- Sintaxis JavaScript y TypeScript comprobada. SQL y PL/pgSQL analizados.
+- Login REST y versión verificados con la cuenta de demostración.
+- Emisión y descarga de PDF comprobadas contra la API real en la cuenta DEMO,
+  con autorización del usuario: factura 33, folio 9999837262, total 2380 CLP,
+  fecha 01/10/2026. Neto 2000 CLP e IVA 380 CLP. Comprobante revisado.
+- El código del gateway se ejecutó con una base de datos local simulada y
+  conexión real al proveedor; no se ha probado la persistencia en tu Supabase.
+- VERIFICACION_DEMO incluye el PDF, XML enviado y resultado de esa prueba.
+- No se desplegó esta actualización ni se ejecutó SQL en tu Supabase.
+- La clave de demostración y los tokens no están en los archivos.
+
+PRUEBAS LOCALES (OPCIONAL)
+Desde la carpeta del proyecto, con Node.js 24:
+  node --test PRUEBAS/*.test.cjs
+Usan datos ficticios y no consultan Facturacion.cl.
+
+MANUAL OFICIAL
+https://www.facturacion.cl/manualintegracion/apirestintegracion.php

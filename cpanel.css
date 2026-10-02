@@ -5995,3 +5995,187 @@ body > #requestClientEditor{
     min-height:42px!important;
   }
 }
+
+
+/* R9.18.207 · Datos del receptor en modal secundario */
+.sii-doc-compact-launch{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border:1px solid #e2e6ea;border-radius:13px;background:#fafbfc}
+.sii-doc-compact-summary{flex:1 1 auto;min-width:0;color:#6b7280;font-size:12px;line-height:1.35}
+#siiOpenDetailsModal{flex:0 0 auto;white-space:nowrap}
+.sii-detail-sheet:not(.hidden){position:fixed!important;z-index:16050!important;inset:18px auto auto 50%;transform:translateX(-50%);width:min(820px,calc(100vw - 28px));max-height:min(90dvh,860px);overflow:auto;padding:18px;border-radius:22px;background:#fff;box-shadow:0 26px 60px rgba(15,23,42,.22)}
+.sii-detail-sheet.hidden{display:none!important}
+.sii-detail-sheet .editor-modal-head{position:sticky;top:-18px;background:#fff;z-index:2;margin:-18px -18px 14px;padding:16px 18px 12px;border-bottom:1px solid #eee4df;border-radius:22px 22px 0 0}
+.sii-detail-sheet .editor-actions{position:sticky;bottom:-18px;background:#fff;border-top:1px solid #eee4df;margin:16px -18px -18px;padding:12px 18px 18px;display:flex;justify-content:flex-end;gap:10px}
+.sii-detail-sheet .sii-emit-grid{display:grid!important;grid-template-columns:repeat(12,minmax(0,1fr))!important;gap:12px!important;align-items:end!important}
+.sii-detail-sheet .sii-emit-grid>.field-group{grid-column:span 6;min-width:0!important}
+.sii-detail-sheet .sii-emit-grid>.emit-full{grid-column:1/-1!important}
+.sii-detail-sheet .sii-emit-grid>.emit-rut{grid-column:span 4!important}
+.sii-detail-sheet .sii-emit-grid>.emit-name{grid-column:span 8!important}
+.sii-detail-sheet .sii-emit-grid>.emit-giro,.sii-detail-sheet .sii-emit-grid>.emit-address,.sii-detail-sheet .sii-emit-grid>.emit-comuna,.sii-detail-sheet .sii-emit-grid>.emit-city,.sii-detail-sheet .sii-emit-grid>.emit-half{grid-column:span 6!important}
+.sii-detail-sheet .sii-emit-grid>.emit-quarter{grid-column:span 3!important}
+.sii-detail-sheet .field-group{gap:6px!important}
+.sii-detail-sheet .field-group>span{font-size:10px!important;font-weight:850!important;letter-spacing:.035em!important;color:#66524a!important}
+.sii-detail-sheet .field-group input,.sii-detail-sheet .field-group select{width:100%!important;min-width:0!important;min-height:44px!important;padding:10px 12px!important;border:1px solid #ddd2cc!important;border-radius:11px!important;background:#fff!important;color:#3e322e!important;font-size:12px!important;box-shadow:none!important}
+.sii-detail-sheet .field-group input:focus,.sii-detail-sheet .field-group select:focus{outline:0!important;border-color:#a97969!important;box-shadow:0 0 0 3px rgba(169,121,105,.10)!important}
+.sii-detail-sheet .sii-cedible-option{margin-top:12px!important}
+.sii-detail-sheet .sii-cedible-check{display:flex!important;align-items:center!important;gap:10px!important;min-width:0!important;padding:10px 12px!important;border-radius:11px!important;background:#fbfcfd!important}
+@media(max-width:700px){
+  .sii-doc-compact-launch{display:grid;grid-template-columns:1fr;gap:10px}
+  .sii-detail-sheet:not(.hidden){inset:8px;transform:none;width:auto;max-height:calc(100dvh - 16px);border-radius:18px;padding:14px}
+  .sii-detail-sheet .editor-modal-head{top:-14px;margin:-14px -14px 12px;padding:14px;border-radius:18px 18px 0 0}
+  .sii-detail-sheet .editor-actions{bottom:-14px;margin:14px -14px -14px;padding:12px 14px 14px;display:grid;grid-template-columns:1fr}
+  .sii-detail-sheet .editor-actions .btn{width:100%!important;justify-content:center!important}
+  .sii-detail-sheet .sii-emit-grid{grid-template-columns:1fr!important;gap:10px!important}
+  .sii-detail-sheet .sii-emit-grid>*{grid-column:1/-1!important}
+}
+
+/* R9.18.208 · Modal receptor siempre sobre el emisor */
+#siiEmitDetailsModal:not(.hidden){display:block!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;z-index:16050!important;}
+#siiEmitModal:not(.hidden){z-index:16000!important;}
+
+
+/* =====================================================================
+   R9.18.209 · CHECKBOX CEDIBLE AISLADO DE LOS ESTILOS GENERALES
+   Funciona igual dentro del emisor o del modal secundario.
+   ===================================================================== */
+#siiCedibleField{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  min-height:0!important;
+  margin:12px 0 0!important;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+  overflow:visible!important;
+  box-sizing:border-box!important;
+}
+#siiCedibleField.hidden{display:none!important}
+#siiCedibleField .sii-cedible-check{
+  position:relative!important;
+  display:inline-flex!important;
+  flex:0 0 auto!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  gap:9px!important;
+  width:auto!important;
+  max-width:100%!important;
+  min-width:0!important;
+  min-height:40px!important;
+  height:auto!important;
+  margin:0!important;
+  padding:9px 12px!important;
+  border:1px solid #d9dee4!important;
+  border-radius:10px!important;
+  background:#fbfcfd!important;
+  box-sizing:border-box!important;
+  cursor:pointer!important;
+  overflow:visible!important;
+  white-space:nowrap!important;
+  font-size:12px!important;
+  font-weight:800!important;
+  line-height:1.2!important;
+  color:#3e322e!important;
+}
+#siiCedibleField #siiIncludeCedible,
+#siiCedibleField #siiIncludeCedible[type="checkbox"]{
+  position:absolute!important;
+  opacity:0!important;
+  width:1px!important;
+  min-width:1px!important;
+  max-width:1px!important;
+  height:1px!important;
+  min-height:1px!important;
+  max-height:1px!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  pointer-events:none!important;
+  overflow:hidden!important;
+  clip:rect(0 0 0 0)!important;
+  clip-path:inset(50%)!important;
+}
+#siiCedibleField .sii-cedible-box{
+  display:grid!important;
+  place-items:center!important;
+  flex:0 0 18px!important;
+  width:18px!important;
+  min-width:18px!important;
+  max-width:18px!important;
+  height:18px!important;
+  min-height:18px!important;
+  max-height:18px!important;
+  margin:0!important;
+  padding:0!important;
+  border:1.5px solid #9da7b1!important;
+  border-radius:4px!important;
+  background:#fff!important;
+  box-sizing:border-box!important;
+  color:#fff!important;
+  font-size:13px!important;
+  line-height:1!important;
+  overflow:hidden!important;
+}
+#siiCedibleField .sii-cedible-box i{
+  display:none!important;
+  margin:0!important;
+  padding:0!important;
+  font-size:12px!important;
+  line-height:1!important;
+}
+#siiCedibleField #siiIncludeCedible:checked + .sii-cedible-box{
+  background:#6f5147!important;
+  border-color:#6f5147!important;
+}
+#siiCedibleField #siiIncludeCedible:checked + .sii-cedible-box i{display:block!important}
+#siiCedibleField #siiIncludeCedible:focus-visible + .sii-cedible-box{
+  outline:3px solid rgba(111,81,71,.16)!important;
+  outline-offset:2px!important;
+}
+#siiCedibleField .sii-cedible-text{
+  display:block!important;
+  flex:0 1 auto!important;
+  width:auto!important;
+  min-width:0!important;
+  max-width:100%!important;
+  margin:0!important;
+  padding:0!important;
+  color:#3e322e!important;
+  font-size:12px!important;
+  font-weight:800!important;
+  line-height:1.2!important;
+  white-space:normal!important;
+  word-break:normal!important;
+  overflow-wrap:normal!important;
+}
+#siiEmitDetailsModal #siiCedibleField,
+#siiEmitDetailsModal #siiCedibleField .sii-cedible-check{
+  box-sizing:border-box!important;
+}
+@media(max-width:520px){
+  #siiCedibleField .sii-cedible-check{width:100%!important;white-space:normal!important}
+}
+
+
+/* R9.18.210 · Estado TRUE/FALSE visible para movimiento de stock */
+.sii-manual-stock-check{position:relative!important;grid-template-columns:auto minmax(0,1fr) auto!important}
+.sii-manual-stock-check .sii-stock-copy{display:block!important;min-width:0!important;flex:1 1 auto!important}
+.sii-manual-stock-check .sii-stock-copy strong{font-size:12px!important;line-height:1.25!important}
+.sii-manual-stock-check .sii-stock-copy small{display:block!important;margin-top:3px!important;line-height:1.35!important;font-size:11px!important}
+.sii-stock-state{flex:0 0 auto;min-width:58px;text-align:center;border-radius:999px;padding:6px 9px;font-size:10px;letter-spacing:.08em;font-weight:900}
+.sii-manual-stock-check.is-true{border-color:#b9dfca!important;background:#f3fbf6!important}
+.sii-manual-stock-check.is-true .sii-stock-state{background:#dff4e7;color:#17633a}
+.sii-manual-stock-check.is-true .sii-stock-copy small{color:#2d6a4f!important}
+.sii-manual-stock-check.is-false{border-color:#e3d7d2!important;background:#faf8f7!important}
+.sii-manual-stock-check.is-false .sii-stock-state{background:#eee8e5;color:#6f544a}
+.sii-manual-stock-check.is-false .sii-stock-copy small{color:#765f56!important}
+@media(max-width:560px){.sii-stock-state{min-width:52px;padding:5px 7px}.sii-manual-stock-check{align-items:flex-start!important}}
+
+
+/* R9.18.212 · Vendedores + campos comerciales DTE */
+.sii-detail-sheet .field-group textarea{width:100%!important;min-width:0!important;min-height:88px!important;padding:10px 12px!important;border:1px solid #ddd2cc!important;border-radius:11px!important;background:#fff!important;color:#3e322e!important;font-size:12px!important;box-shadow:none!important;resize:vertical}
+.sii-detail-sheet .field-group textarea:focus{outline:0!important;border-color:#a97969!important;box-shadow:0 0 0 3px rgba(169,121,105,.10)!important}
+#siiClientLookupState{display:block;margin-top:-4px;color:#7b6b65;font-size:11px}
+#view-sellers .admin-table td:first-child strong{font-weight:800}

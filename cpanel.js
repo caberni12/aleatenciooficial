@@ -1,3 +1,4 @@
+// ALE ATENCIO R9.18.215 · Emisión manual directa 33/34/39/41/52
 // ALE ATENCIO R9.18.205 · Receptor DTE autocompleta por RUT desde Clientes
 // ALE ATENCIO R9.18.129 · sidebar cache isolation
 // R9.18.125-MANTENEDOR-FOLIOS
@@ -149,7 +150,7 @@ const FINAL_ORDER_STATES=new Set(["ENTREGADO","CANCELADO"]);
 function orderState(value){return String(value||"").trim().toUpperCase()}
 function isFinalOrder(orderOrState){return FINAL_ORDER_STATES.has(orderState(typeof orderOrState==="object"?orderOrState?.estado:orderOrState))}
 function orderFinalMessage(state){return orderState(state)==="CANCELADO"?"Pedido cancelado · estado final e irreversible":"Pedido entregado · estado final e irreversible"}
-let token=localStorage.getItem("aleAdminToken")||sessionStorage.getItem("aleAdminToken")||"", data={products:[],categories:[],banners:[],orders:[],requests:[],quotes:[],clients:[],users:[],suppliers:[],supplies:[],purchases:[],purchaseItems:[],gallery:[],config:{},currentUser:null};
+let token=localStorage.getItem("aleAdminToken")||sessionStorage.getItem("aleAdminToken")||"", data={products:[],categories:[],banners:[],orders:[],requests:[],quotes:[],clients:[],users:[],sellers:[],suppliers:[],supplies:[],purchases:[],purchaseItems:[],gallery:[],config:{},currentUser:null};
 window.addEventListener("ale:billing-iva-changed",e=>{const pct=Number(e.detail?.iva_porcentaje);if(!Number.isFinite(pct))return;data.config={...(data.config||{}),iva_porcentaje:pct};const qIva=$("#qIva"),editor=$("#quoteEditor"),editing=Boolean($("#qId")?.value);if(qIva&&(!editor||editor.classList.contains("hidden")||!editing)){qIva.value=String(pct);try{updateQuoteTotals()}catch(_){}}});
 
 // R9.15.1 · Sesión estable: una falla temporal de red nunca borra una sesión válida.
@@ -697,6 +698,7 @@ function normalizePanelData(src={}){
     quotes:Array.isArray(src.quotes)?src.quotes:(Array.isArray(data.quotes)?data.quotes:[]),
     clients:Array.isArray(src.clients)?src.clients:(Array.isArray(data.clients)?data.clients:[]),
     users:Array.isArray(src.users)?src.users:(Array.isArray(data.users)?data.users:[]),
+    sellers:Array.isArray(src.sellers)?src.sellers:(Array.isArray(data.sellers)?data.sellers:[]),
     priceLists:Array.isArray(src.priceLists)?src.priceLists:(Array.isArray(data.priceLists)?data.priceLists:[]),
     priceListItems:Array.isArray(src.priceListItems)?src.priceListItems:(Array.isArray(data.priceListItems)?data.priceListItems:[]),
     wholesalers:Array.isArray(src.wholesalers)?src.wholesalers:(Array.isArray(data.wholesalers)?data.wholesalers:[]),
@@ -724,7 +726,7 @@ function normalizePanelData(src={}){
   };
 }
 const ADMIN_CORE_MODULES=["products","categories","banners","config"];
-const ADMIN_SECONDARY_MODULES=["orders","requests","quotes","clients","users","wholesale","suppliers","warehouses","stock","ledger","inventory","gallery"];
+const ADMIN_SECONDARY_MODULES=["orders","requests","quotes","clients","users","sellers","wholesale","suppliers","warehouses","stock","ledger","inventory","gallery"];
 const ADMIN_DATA_MODULES=[...ADMIN_CORE_MODULES,...ADMIN_SECONDARY_MODULES];
 let adminModulesRetryTimer=null,adminReloadPromise=null,adminRetryAttempt=0;
 const adminRetryModules=new Set();
@@ -918,11 +920,13 @@ function dashDateRange(range=dashboardRange){const now=new Date(),end=new Date(n
 function dashNumber(v){return Number(v||0).toLocaleString("es-CL")}
 function dashMoney(v){return money(Number(v||0))}
 function dashSafeText(v){return esc(String(v??""))}
-function dashboardFilterOrders(){
+function dashboardFilterRows(source){
   const region=$("#dashRegionFilter")?.value||"",commune=$("#dashCommuneFilter")?.value||"",channel=$("#dashChannelFilter")?.value||"",type=$("#dashSaleTypeFilter")?.value||"";
-  const rows=(dashboardAnalytics?.sales_orders||[]).map(o=>({...o,_region:dashRegionOf(o.comuna||o.ciudad)}));
+  const rows=(source||[]).map(o=>({...o,_region:dashRegionOf(o.comuna||o.ciudad)}));
   return rows.filter(o=>(!region||o._region===region)&&(!commune||dashNorm(o.comuna)===dashNorm(commune))&&(!channel||String(o.origen||o.canal||"WEB").toUpperCase()===channel)&&(!type||(type==="MAYORISTA"?String(o.tipo_venta||o.origen||"").toUpperCase().includes("MAYORISTA"):!String(o.tipo_venta||o.origen||"").toUpperCase().includes("MAYORISTA"))));
 }
+function dashboardFilterOrders(){return dashboardFilterRows(dashboardAnalytics?.all_orders||dashboardAnalytics?.sales_orders||[])}
+function dashboardFilterSales(){return dashboardFilterRows(dashboardAnalytics?.sales_entries||dashboardAnalytics?.sales_orders||[])}
 function dashGroup(rows,keyFn,valueFn=()=>1){const m=new Map();for(const row of rows){const k=keyFn(row)||"Sin dato";m.set(k,(m.get(k)||0)+Number(valueFn(row)||0))}return [...m.entries()].map(([name,value])=>({name,value})).sort((a,b)=>b.value-a.value)}
 function dashSet(id,value){const el=$(id);if(el)el.textContent=value}
 function renderDashBars(rows){const host=$("#dashSalesChart");if(!host)return;const monthNames=["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"],totals=Array(12).fill(0);for(const o of rows){const d=new Date(o.fecha_pago||o.fecha||o.created_at);if(!Number.isNaN(d.getTime()))totals[d.getMonth()]+=Number(o.total||0)}const max=Math.max(1,...totals);host.innerHTML=totals.map((v,i)=>`<div class="dash-bar-item" title="${monthNames[i]} · ${dashMoney(v)}" style="--bar-h:${Math.max(2,(v/max)*100)}%"><i style="height:${Math.max(2,(v/max)*100)}%"></i><small>${v?dashMoney(v):"$0"}</small><span>${monthNames[i]}</span></div>`).join("")}
@@ -960,15 +964,27 @@ function renderDashMap(rows){
     el.addEventListener('mouseleave',()=>$("#dashMapTooltip")?.classList.add('hidden'));
   });
 }
-function dashboardRegionChanged(){const region=$("#dashRegionFilter")?.value||"",communeSel=$("#dashCommuneFilter");if(communeSel){const communes=[...new Set((dashboardAnalytics?.sales_orders||[]).map(o=>String(o.comuna||"").trim()).filter(Boolean).filter(c=>!region||dashRegionOf(c)===region))].sort((a,b)=>a.localeCompare(b,'es'));const current=communeSel.value;communeSel.innerHTML='<option value="">Todas</option>'+communes.map(c=>`<option value="${dashSafeText(c)}">${dashSafeText(c)}</option>`).join('');if([...communeSel.options].some(o=>o.value===current))communeSel.value=current;else communeSel.value=""}renderModernDashboardLocal()}
-function renderModernDashboardLocal(){if(!dashboardAnalytics)return;const rows=dashboardFilterOrders(),sales=rows.reduce((a,o)=>a+Number(o.total||0),0),orders=rows.length,ticket=orders?sales/orders:0,visits=Number(dashboardAnalytics.visits_count||0),visitors=Number(dashboardAnalytics.unique_visitors||0),conversion=visits?orders/visits*100:0,communes=dashGroup(rows,o=>String(o.comuna||"Sin comuna").trim()||"Sin comuna",o=>o.total),region=$("#dashRegionFilter")?.value||"";
-  dashSet("#dashKpiSales",dashMoney(sales));dashSet("#dashKpiOrders",dashNumber(orders));dashSet("#dashKpiTicket",dashMoney(ticket));dashSet("#dashKpiVisits",dashNumber(visits));dashSet("#dashKpiVisitors",`${dashNumber(visitors)} visitantes únicos`);dashSet("#dashKpiConversion",`${conversion.toLocaleString('es-CL',{maximumFractionDigits:1})}%`);dashSet("#dashKpiTopCommune",communes[0]?.name||"—");dashSet("#dashKpiTopCommuneMeta",communes[0]?`${dashGroup(rows,o=>String(o.comuna||"Sin comuna")).find(x=>x.name===communes[0].name)?.value||0} pedidos · ${dashMoney(communes[0].value)}`:"Sin ventas");dashSet("#dashChileTotal",dashMoney((dashboardAnalytics.sales_orders||[]).reduce((a,o)=>a+Number(o.total||0),0)));dashSet("#dashChileOrders",`${dashNumber((dashboardAnalytics.sales_orders||[]).length)} pedidos`);
+function dashboardRegionChanged(){const region=$("#dashRegionFilter")?.value||"",communeSel=$("#dashCommuneFilter");if(communeSel){const sources=[...(dashboardAnalytics?.all_orders||[]),...(dashboardAnalytics?.sales_entries||[])];const communes=[...new Set(sources.map(o=>String(o.comuna||"").trim()).filter(Boolean).filter(c=>!region||dashRegionOf(c)===region))].sort((a,b)=>a.localeCompare(b,'es'));const current=communeSel.value;communeSel.innerHTML='<option value="">Todas</option>'+communes.map(c=>`<option value="${dashSafeText(c)}">${dashSafeText(c)}</option>`).join('');if([...communeSel.options].some(o=>o.value===current))communeSel.value=current;else communeSel.value=""}renderModernDashboardLocal()}
+function renderModernDashboardLocal(){if(!dashboardAnalytics)return;
+  const orderRows=dashboardFilterOrders(),salesRows=dashboardFilterSales(),sales=salesRows.reduce((a,o)=>a+Number(o.total||0),0),orders=orderRows.length,salesOps=salesRows.length,ticket=salesOps?sales/salesOps:0,visits=Number(dashboardAnalytics.visits_count||0),visitors=Number(dashboardAnalytics.unique_visitors||0),conversion=visits?orders/visits*100:0,communes=dashGroup(salesRows,o=>String(o.comuna||"Sin comuna").trim()||"Sin comuna",o=>o.total),region=$("#dashRegionFilter")?.value||"";
+  dashSet("#dashKpiSales",dashMoney(sales));dashSet("#dashKpiOrders",dashNumber(orders));dashSet("#dashKpiTicket",dashMoney(ticket));dashSet("#dashKpiVisits",dashNumber(visits));dashSet("#dashKpiVisitors",`${dashNumber(visitors)} visitantes únicos`);dashSet("#dashKpiConversion",`${conversion.toLocaleString('es-CL',{maximumFractionDigits:1})}%`);dashSet("#dashKpiTopCommune",communes[0]?.name||"—");
+  const orderCommuneCounts=new Map(dashGroup(orderRows,o=>String(o.comuna||"Sin comuna").trim()||"Sin comuna").map(x=>[x.name,x.value]));dashSet("#dashKpiTopCommuneMeta",communes[0]?`${dashNumber(orderCommuneCounts.get(communes[0].name)||0)} pedidos · ${dashMoney(communes[0].value)}`:"Sin ventas");
+  const allSales=dashboardAnalytics.sales_entries||dashboardAnalytics.sales_orders||[],allOrders=dashboardAnalytics.all_orders||dashboardAnalytics.sales_orders||[];dashSet("#dashChileTotal",dashMoney(allSales.reduce((a,o)=>a+Number(o.total||0),0)));dashSet("#dashChileOrders",`${dashNumber(allOrders.length)} pedidos`);
   dashSet("#dashRegionTitle",region?`Región: ${region}`:"Todo Chile");dashSet("#dashRegionSales",dashMoney(sales));dashSet("#dashRegionOrders",dashNumber(orders));dashSet("#dashRegionTicket",dashMoney(ticket));dashSet("#dashCommuneChartTitle",region?`Ventas por Comuna · ${region}`:"Ventas por Comuna");
-  renderDashBars(rows);renderDashLine();renderDashMap((dashboardAnalytics.sales_orders||[]).map(o=>({...o,_region:dashRegionOf(o.comuna||o.ciudad)})));renderDashRanking("#dashCommuneChart",communes,{moneyValue:true,onClick:name=>{if($("#dashCommuneFilter")){ $("#dashCommuneFilter").value=name; renderModernDashboardLocal(); }}});
-  const counts=new Map(dashGroup(rows,o=>String(o.comuna||"Sin comuna").trim()||"Sin comuna").map(x=>[x.name,x.value]));const topHost=$("#dashTopCommunes");if(topHost)topHost.innerHTML=communes.slice(0,5).map((x,i)=>`<div class="dash-commune-item" data-name="${dashSafeText(x.name)}"><span>${i+1}</span><div><strong>${dashSafeText(x.name)}</strong><small>${dashNumber(counts.get(x.name)||0)} pedidos</small></div><b>${dashMoney(x.value)}</b></div>`).join("")||'<div class="dash-empty">Sin datos</div>';topHost?.querySelectorAll('.dash-commune-item').forEach(el=>el.addEventListener('click',()=>{const name=el.dataset.name||"",r=dashRegionOf(name);if($("#dashRegionFilter"))$("#dashRegionFilter").value=r==='Sin región'?"":r;dashboardRegionChanged();if($("#dashCommuneFilter"))$("#dashCommuneFilter").value=name;renderModernDashboardLocal()}));
+  renderDashBars(salesRows);renderDashLine();renderDashMap((dashboardAnalytics.sales_entries||dashboardAnalytics.sales_orders||[]).map(o=>({...o,_region:dashRegionOf(o.comuna||o.ciudad)})));renderDashRanking("#dashCommuneChart",communes,{moneyValue:true,onClick:name=>{if($("#dashCommuneFilter")){ $("#dashCommuneFilter").value=name; renderModernDashboardLocal(); }}});
+  const topHost=$("#dashTopCommunes");if(topHost)topHost.innerHTML=communes.slice(0,5).map((x,i)=>`<div class="dash-commune-item" data-name="${dashSafeText(x.name)}"><span>${i+1}</span><div><strong>${dashSafeText(x.name)}</strong><small>${dashNumber(orderCommuneCounts.get(x.name)||0)} pedidos</small></div><b>${dashMoney(x.value)}</b></div>`).join("")||'<div class="dash-empty">Sin datos</div>';topHost?.querySelectorAll('.dash-commune-item').forEach(el=>el.addEventListener('click',()=>{const name=el.dataset.name||"",r=dashRegionOf(name);if($("#dashRegionFilter"))$("#dashRegionFilter").value=r==='Sin región'?"":r;dashboardRegionChanged();if($("#dashCommuneFilter"))$("#dashCommuneFilter").value=name;renderModernDashboardLocal()}));
   const products=(dashboardAnalytics.top_products||[]).map(x=>({name:x.producto_nombre||"Producto",value:Number(x.cantidad||0)}));renderDashRanking("#dashTopProducts",products,{moneyValue:false,limit:5});
+  const prodTitle=$("#dashTopProductsTitle");if(prodTitle)prodTitle.textContent=dashboardAnalytics.top_products_basis==="PAGADO"?"Top Productos Más Vendidos":"Top Productos en Pedidos";
 }
-async function loadModernDashboard(force=false){if(dashboardLoading)return;if(!$("#view-dashboard"))return;dashboardLoading=true;$("#dashRefresh")?.classList.add('is-loading');try{const range=dashDateRange();const out=await AleAPI.dashboardAnalytics({from:range.from,to:range.to},token);dashboardAnalytics=out;const regionSel=$("#dashRegionFilter");if(regionSel&&regionSel.options.length<=1)regionSel.innerHTML='<option value="">Todas</option>'+DASH_REGIONS.map(([r])=>`<option value="${dashSafeText(r)}">${dashSafeText(r)}</option>`).join('');dashboardRegionChanged();const status=$("#dashStatus");if(status){status.classList.toggle('ok',out.analytics_installed!==false);status.innerHTML=out.analytics_installed===false?'<i class="bi bi-exclamation-triangle"></i><span>Ventas cargadas. Para comenzar a medir visitas web instala el SQL 20 y despliega dynamic-processor incluido en este ZIP.</span>':'<i class="bi bi-shield-check"></i><span>Dashboard conectado: ventas pagadas y analítica web real desde Supabase.</span>'}}catch(err){console.warn('dashboard analytics',err);const status=$("#dashStatus");if(status){status.classList.remove('ok');status.innerHTML=`<i class="bi bi-exclamation-triangle"></i><span>No fue posible cargar la analítica avanzada: ${dashSafeText(err?.message||err)}. Las demás funciones del cPanel siguen disponibles.</span>`}}finally{dashboardLoading=false;$("#dashRefresh")?.classList.remove('is-loading')}}
+
+function dashboardLocalFallback(){
+  const range=dashDateRange(),from=new Date(`${range.from}T00:00:00`),to=new Date(`${range.to}T23:59:59`);
+  const all=(data.orders||[]).filter(o=>String(o.estado||"").toUpperCase()!=="CANCELADO").filter(o=>{const dt=new Date(o.fecha_pago||o.fecha||o.creado_en||0);return !Number.isNaN(dt.getTime())&&dt>=from&&dt<=to});
+  const paid=all.filter(o=>String(o.estado_pago||"").toUpperCase()==="PAGADO");const base=paid.length?paid:all;
+  const products=new Map();for(const o of base){for(const it of Array.isArray(o.detalle)?o.detalle:[]){const name=it.producto_nombre||it.nombre||it.descripcion||"Producto",key=it.producto_id||name,cur=products.get(key)||{producto_nombre:name,cantidad:0};cur.cantidad+=Number(it.cantidad||1);products.set(key,cur)}}
+  return{ok:true,analytics_installed:false,local_fallback:true,all_orders:all,sales_orders:paid,direct_sales:[],sales_entries:paid,metrics:{orders_total:all.length,paid_orders:paid.length,direct_sales:0,sales_operations:paid.length},top_products:[...products.values()].sort((a,b)=>b.cantidad-a.cantidad).slice(0,20),top_products_basis:paid.length?"PAGADO":"PEDIDOS",visits_count:0,unique_visitors:0,visits_by_day:[],top_paths:[]};
+}
+async function loadModernDashboard(force=false){if(dashboardLoading)return;if(!$("#view-dashboard"))return;dashboardLoading=true;$("#dashRefresh")?.classList.add('is-loading');try{const range=dashDateRange();const out=await AleAPI.dashboardAnalytics({from:range.from,to:range.to},token);dashboardAnalytics=out;const regionSel=$("#dashRegionFilter");if(regionSel&&regionSel.options.length<=1)regionSel.innerHTML='<option value="">Todas</option>'+DASH_REGIONS.map(([r])=>`<option value="${dashSafeText(r)}">${dashSafeText(r)}</option>`).join('');dashboardRegionChanged();const status=$("#dashStatus");if(status){status.classList.toggle('ok',out.analytics_installed!==false);const m=out.metrics||{};status.innerHTML=out.analytics_installed===false?`<i class="bi bi-exclamation-triangle"></i><span>Dashboard conectado a pedidos. Visitas web no disponibles en esta instalación.</span>`:`<i class="bi bi-shield-check"></i><span>Dashboard conectado · ${dashNumber(m.orders_total||0)} pedidos · ${dashNumber(m.paid_orders||0)} pagados · ${dashNumber(m.direct_sales||0)} ventas directas · ${dashNumber(out.visits_count||0)} visitas.</span>`}}catch(err){console.warn('dashboard analytics',err);dashboardAnalytics=dashboardLocalFallback();dashboardRegionChanged();const status=$("#dashStatus");if(status){status.classList.remove('ok');status.innerHTML=`<i class="bi bi-exclamation-triangle"></i><span>Dashboard cargado con ventas locales. La analítica web avanzada no respondió: ${dashSafeText(err?.message||err)}.</span>`}}finally{dashboardLoading=false;$("#dashRefresh")?.classList.remove('is-loading')}}
 function bindModernDashboard(){if(dashboardBound)return;dashboardBound=true;$("#dashRegionFilter")?.addEventListener('change',dashboardRegionChanged);$("#dashCommuneFilter")?.addEventListener('change',renderModernDashboardLocal);$("#dashChannelFilter")?.addEventListener('change',renderModernDashboardLocal);$("#dashSaleTypeFilter")?.addEventListener('change',renderModernDashboardLocal);$("#dashRefresh")?.addEventListener('click',()=>loadModernDashboard(true));$("#dashClearRegion")?.addEventListener('click',()=>{if($("#dashRegionFilter"))$("#dashRegionFilter").value="";if($("#dashCommuneFilter"))$("#dashCommuneFilter").value="";dashboardRegionChanged()});$("#dashRangeTabs")?.querySelectorAll('button[data-range]').forEach(btn=>btn.addEventListener('click',()=>{$("#dashRangeTabs")?.querySelectorAll('button').forEach(x=>x.classList.remove('active'));btn.classList.add('active');dashboardRange=btn.dataset.range||'year';dashSet('#dashVisitsPeriodLabel',btn.textContent.trim());loadModernDashboard(true)}));$$('[data-dash-action]').forEach(btn=>btn.addEventListener('click',()=>{const a=btn.dataset.dashAction;if(a==='orders'||a==='sales')openAdminView('orders');else if(a==='commune')document.querySelector('#dashCommuneChart')?.scrollIntoView({behavior:'smooth',block:'center'});else if(a==='visits'||a==='conversion')document.querySelector('#dashVisitsChart')?.scrollIntoView({behavior:'smooth',block:'center'})}))}
 function renderModernDashboard(){bindModernDashboard();if(!dashboardAnalytics)loadModernDashboard(true);else renderModernDashboardLocal()}
 
@@ -991,7 +1007,7 @@ function renderAll(){
   if($("#kpiRequests")) $("#kpiRequests").textContent=data.requests.filter(x=>String(x.estado).toUpperCase()==="NUEVA").length;
   if($("#kpiStock")) $("#kpiStock").textContent=data.products.reduce((s,p)=>s+Number(p.stock||0),0);
   if($("#dashboardSummary")) $("#dashboardSummary").innerHTML=`<div class="summary-row"><span>Productos destacados</span><strong>${data.products.filter(p=>String(p.destacado).toUpperCase()==="SI").length}</strong></div><div class="summary-row"><span>Categorías activas</span><strong>${data.categories.length}</strong></div><div class="summary-row"><span>Banners activos</span><strong>${data.banners.length}</strong></div><div class="summary-row"><span>Total pedidos</span><strong>${data.orders.length}</strong></div><div class="summary-row"><span>Cotizaciones</span><strong>${data.quotes.length}</strong></div>`;
-  fillCategorySelects();renderProducts();renderCategories();renderBanners();renderOrders();renderRequests();renderQuotes();renderClients();renderDashboardSalesSnapshot();renderModernDashboard();renderReports();renderUsers();renderIntegrations();renderPayments();renderSettings();renderWebContent();renderWholesale();renderSuppliers();renderWarehouses();renderWarehouseStock();renderLedger();renderInventory();renderGallery();
+  fillCategorySelects();renderProducts();renderCategories();renderBanners();renderOrders();renderRequests();renderQuotes();renderClients();renderDashboardSalesSnapshot();renderModernDashboard();renderReports();renderUsers();renderIntegrations();renderPayments();renderSettings();renderWebContent();renderWholesale();renderSellers();renderSuppliers();renderWarehouses();renderWarehouseStock();renderLedger();renderInventory();renderGallery();
 }
 function fillCategorySelects(){
   const opts=data.categories.map(c=>`<option value="${esc(c.nombre)}">${esc(c.nombre)}</option>`).join("");
@@ -2631,6 +2647,24 @@ function showEditor(id,show=true){
   const el=$("#"+id);if(el)el.classList.toggle("hidden",!show);
   if(OPERATIONAL_MODAL_IDS.has(String(id)))syncOperationalModalBody();
 }
+
+function activeSellers(){return (data.sellers||[]).filter(x=>String(x.activo??true).toUpperCase()!=="FALSE"&&String(x.activo??"SI").toUpperCase()!=="NO")}
+function fillSiiSellerSelect(selected=""){
+  const sel=$("#siiVendedorId");if(!sel)return;const current=selected||sel.value||"";
+  sel.innerHTML='<option value="">Sin vendedor asignado</option>'+activeSellers().map(x=>`<option value="${esc(x.id)}">${esc(x.nombre||x.codigo||x.id)}${x.codigo?` · ${esc(x.codigo)}`:""}</option>`).join("");
+  if([...sel.options].some(o=>o.value===current))sel.value=current;
+}
+function selectedSeller(){const id=$("#siiVendedorId")?.value||"";return (data.sellers||[]).find(x=>String(x.id)===String(id))||null}
+function renderSellers(){
+  const rows=(data.sellers||[]).map(x=>`<tr><td><strong>${esc(x.nombre||"")}</strong><small>${esc(x.codigo||"")}</small></td><td>${esc(x.rut||"")}</td><td>${esc(x.telefono||"")}</td><td>${esc(x.email||"")}</td><td>${String(x.activo??true).toUpperCase()!=="FALSE"&&String(x.activo??"SI").toUpperCase()!=="NO"?"Activo":"Inactivo"}</td><td><div class="row-actions"><button data-edit-seller="${esc(x.id)}">Editar</button></div></td></tr>`).join("");
+  if($("#sellersTable"))$("#sellersTable").innerHTML=table(["Vendedor","RUT","Teléfono","Correo","Estado","Acciones"],rows);fillSiiSellerSelect();
+}
+function clearSeller(){["sellerId","sellerCode","sellerName","sellerRut","sellerPhone","sellerEmail","sellerNotes"].forEach(id=>{if($("#"+id))$("#"+id).value=""});if($("#sellerActive"))$("#sellerActive").value="SI"}
+function openSeller(id=""){clearSeller();const x=(data.sellers||[]).find(v=>String(v.id)===String(id));if(x){$("#sellerId").value=x.id||"";$("#sellerCode").value=x.codigo||"";$("#sellerName").value=x.nombre||"";$("#sellerRut").value=x.rut||"";$("#sellerPhone").value=x.telefono||"";$("#sellerEmail").value=x.email||"";$("#sellerNotes").value=x.observaciones||"";$("#sellerActive").value=(String(x.activo??true).toUpperCase()==="FALSE"||String(x.activo).toUpperCase()==="NO")?"NO":"SI"}showEditor("sellerEditor",true)}
+$("#newSeller")?.addEventListener("click",()=>openSeller());$("#closeSellerEditor")?.addEventListener("click",()=>showEditor("sellerEditor",false));$("#cancelSeller")?.addEventListener("click",()=>showEditor("sellerEditor",false));
+$("#sellersTable")?.addEventListener("click",e=>{const b=e.target.closest("[data-edit-seller]");if(b)openSeller(b.dataset.editSeller)});
+$("#saveSeller")?.addEventListener("click",e=>busy(e.currentTarget,async()=>{try{const payload={id:$("#sellerId").value,codigo:$("#sellerCode").value.trim(),nombre:$("#sellerName").value.trim(),rut:$("#sellerRut").value.trim(),telefono:$("#sellerPhone").value.trim(),email:$("#sellerEmail").value.trim(),observaciones:$("#sellerNotes").value.trim(),activo:$("#sellerActive").value};if(!payload.nombre)return toast("Nombre de vendedor obligatorio");await AleAPI.post("saveSeller",payload,token);data=normalizePanelData(await AleAPI.adminModuleReliable("sellers",token,2));showEditor("sellerEditor",false);renderSellers();toast("✓ Vendedor guardado")}catch(err){console.warn(err);toast("✕ No fue posible guardar el vendedor")}}));
+
 function renderSuppliers(){
   const rows=(data.suppliers||[]).map(x=>`<tr><td><strong>${esc(x.nombre||"")}</strong></td><td>${esc(x.rut||"")}</td><td>${esc(x.contacto||"")}</td><td>${esc(x.telefono||"")}</td><td>${esc(x.email||"")}</td><td>${String(x.activo??true).toUpperCase()!=="FALSE"&&String(x.activo??"SI").toUpperCase()!=="NO"?"Activo":"Inactivo"}</td><td><div class="row-actions"><button data-edit-supplier="${esc(x.id)}">Editar</button></div></td></tr>`).join("");
   if($("#suppliersTable"))$("#suppliersTable").innerHTML=table(["Proveedor","RUT","Contacto","Teléfono","Correo","Estado","Acciones"],rows)
@@ -3022,6 +3056,7 @@ const GLOBAL_REFRESH_MODULES={
   requests:["requests"],
   quotes:["quotes","products","clients"],
   clients:["clients"],
+  sellers:["sellers"],
   products:["products","categories","stock","warehouses"],
   categories:["categories"],
   banners:["banners"],
@@ -3100,7 +3135,7 @@ async function refreshActiveAdminView(){
 $("#moduleRefreshBtn")?.addEventListener("click",refreshActiveAdminView);
 syncGlobalRefreshButton();
 
-function openAdminView(view){const target=$(`.admin-nav button[data-view="${CSS.escape(String(view||"dashboard"))}"]`);if(!target)return;if(target.closest('.nav-group'))openNavGroupForButton(target);else{$$('.nav-group').forEach(x=>x.removeAttribute('open'));try{localStorage.removeItem(NAV_GROUP_STORAGE)}catch{}}if(String(target.dataset.view)!=="wholesale-credits"&&typeof closeAllWholesaleCreditModals==="function")closeAllWholesaleCreditModals();$$('.admin-nav button').forEach(x=>x.classList.remove("active"));target.classList.add("active");$$('.admin-view').forEach(x=>x.classList.remove("active"));$("#view-"+target.dataset.view)?.classList.add("active");$("#viewTitle").textContent=target.textContent.trim();syncGlobalRefreshButton(target.dataset.view);if(target.dataset.view==="dashboard"){renderModernDashboard()}if(target.dataset.view==="products"){if($("#productSearch"))$("#productSearch").value="";if($("#productFilter"))$("#productFilter").value="";renderProducts()}if(target.dataset.view==="wholesale"){renderWholesale()}if(target.dataset.view==="wholesale-credits"){renderWholesaleCredits()}if(target.dataset.view==="suppliers"){renderSuppliers()}if(target.dataset.view==="purchases"){loadSiiExchange().catch(err=>{console.warn("purchases dte",err);toast(`✕ ${err.message||err}`)})}if(target.dataset.view==="warehouses"){renderWarehouses()}if(target.dataset.view==="stock"){renderWarehouseStock()}if(target.dataset.view==="ledger"){renderLedger()}if(target.dataset.view==="inventory"){renderInventory()}if(target.dataset.view==="gallery"){renderGallery()}if(target.dataset.view==="folio-manager"){loadFolioManager(false).catch(err=>console.warn("folio manager open",err))}if(target.dataset.view==="reports"){loadReports(true).catch(err=>console.warn("reports open",err))}if(sidebarIsMobile())setSidebarOpen(false);window.scrollTo({top:0,behavior:"smooth"})}
+function openAdminView(view){const target=$(`.admin-nav button[data-view="${CSS.escape(String(view||"dashboard"))}"]`);if(!target)return;if(target.closest('.nav-group'))openNavGroupForButton(target);else{$$('.nav-group').forEach(x=>x.removeAttribute('open'));try{localStorage.removeItem(NAV_GROUP_STORAGE)}catch{}}if(String(target.dataset.view)!=="wholesale-credits"&&typeof closeAllWholesaleCreditModals==="function")closeAllWholesaleCreditModals();$$('.admin-nav button').forEach(x=>x.classList.remove("active"));target.classList.add("active");$$('.admin-view').forEach(x=>x.classList.remove("active"));$("#view-"+target.dataset.view)?.classList.add("active");$("#viewTitle").textContent=target.textContent.trim();syncGlobalRefreshButton(target.dataset.view);if(target.dataset.view==="dashboard"){renderModernDashboard()}if(target.dataset.view==="products"){if($("#productSearch"))$("#productSearch").value="";if($("#productFilter"))$("#productFilter").value="";renderProducts()}if(target.dataset.view==="wholesale"){renderWholesale()}if(target.dataset.view==="wholesale-credits"){renderWholesaleCredits()}if(target.dataset.view==="sellers"){renderSellers()}if(target.dataset.view==="suppliers"){renderSuppliers()}if(target.dataset.view==="purchases"){loadSiiExchange().catch(err=>{console.warn("purchases dte",err);toast(`✕ ${err.message||err}`)})}if(target.dataset.view==="warehouses"){renderWarehouses()}if(target.dataset.view==="stock"){renderWarehouseStock()}if(target.dataset.view==="ledger"){renderLedger()}if(target.dataset.view==="inventory"){renderInventory()}if(target.dataset.view==="gallery"){renderGallery()}if(target.dataset.view==="folio-manager"){loadFolioManager(false).catch(err=>console.warn("folio manager open",err))}if(target.dataset.view==="reports"){loadReports(true).catch(err=>console.warn("reports open",err))}if(sidebarIsMobile())setSidebarOpen(false);window.scrollTo({top:0,behavior:"smooth"})}
 $$('.admin-nav button').forEach(btn=>btn.addEventListener("click",()=>openAdminView(btn.dataset.view)));
 function formatDate(v){if(!v)return"";const d=new Date(v);return isNaN(d)?String(v):d.toLocaleString("es-CL")}
 let sessionRestoreTimer=null,sessionRestoreBusy=false;
@@ -3262,9 +3297,40 @@ async function handleReceivedDteClick(e){const response=e.target.closest('[data-
 function renderSiiCertification(){const tbody=$("#siiCertificationTable");if(!tbody)return;const stages=siiState.certificacion||[],states=['PENDIENTE','EN_PROCESO','COMPLETADO','OBSERVADO'];tbody.innerHTML=stages.length?stages.map(x=>`<tr><td><strong>${Number(x.orden)}. ${esc(x.nombre||x.codigo)}</strong><small>${esc(x.codigo)}</small></td><td><select class="sii-cert-state" data-code="${esc(x.codigo)}">${states.map(s=>`<option value="${s}" ${s===x.estado?'selected':''}>${s.replace('_',' ')}</option>`).join('')}</select></td><td><input class="sii-cert-detail" data-code="${esc(x.codigo)}" value="${esc(x.detalle||'')}" placeholder="Resultado, TrackID, fecha o observación"><input class="sii-cert-evidence" data-code="${esc(x.codigo)}" value="${esc(x.evidencia||'')}" placeholder="Evidencia / referencia oficial"></td><td><button class="btn btn-primary btn-compact" data-sii-cert-save="${esc(x.codigo)}">Guardar</button></td></tr>`).join(''):'<tr><td colspan="4" class="sii-document-empty">Ejecuta los SQL R9.18.126 y R9.18.127 para habilitar intercambio, compras y control de certificación.</td></tr>';$("#siiCertReceivedCount").textContent=Number(siiState.certMetricas?.dte_recibidos||0).toLocaleString('es-CL');$("#siiCertResponseCount").textContent=Number(siiState.certMetricas?.respuestas_generadas||0).toLocaleString('es-CL')}
 async function loadSiiCertification(){const out=await SiiAPI.certificationStatus(token);siiState.certificacion=out.etapas||[];siiState.certMetricas=out.metricas||{};renderSiiCertification();return out}
 
-function renderSiiAll(){renderSiiConfig();renderSiiCertificates();renderSiiCaf();renderSiiDocuments();renderSiiRuntime();updateSiiIssueModeUi()}
-function closeSiiModals(){ $$('.sii-modal').forEach(x=>x.classList.add('hidden'));document.body.classList.remove('sii-modal-open') }
+function renderSiiAll(){renderSiiConfig();renderSiiCertificates();renderSiiCaf();renderSiiDocuments();renderSiiRuntime();syncSiiSourceModeUi()}
+function closeSiiModals(){ $$('.sii-modal').forEach(x=>x.classList.add('hidden'));$('#siiEmitDetailsModal')?.classList.add('hidden');document.body.classList.remove('sii-modal-open') }
 function openSiiModal(id){const modal=$(`#${CSS.escape(String(id||''))}`);if(!modal)return;closeSiiModals();modal.classList.remove('hidden');document.body.classList.add('sii-modal-open');const focusable=modal.querySelector('input,select,button,textarea');setTimeout(()=>focusable?.focus({preventScroll:true}),0)}
+
+function syncSiiManualMoveStockUi(){
+  const input=$("#siiManualMoveStock"),box=$("#siiManualMoveStockBox"),state=$("#siiManualMoveStockState"),txt=$("#siiManualMoveStockText");
+  if(!input||!box)return;
+  const on=Boolean(input.checked);
+  box.classList.toggle("is-true",on);box.classList.toggle("is-false",!on);
+  if(state)state.textContent=on?"TRUE":"FALSE";
+  const tipo=Number($("#siiTipoDte")?.value||0),doc=tipo===52?"esta guía directa":"esta venta manual";
+  if(txt)txt.textContent=on?`TRUE · DESCUENTA STOCK · Al emitir ${doc}, se rebajará stock de la bodega seleccionada.`:"FALSE · NO DESCUENTA STOCK · El documento se emitirá sin modificar inventario.";
+}
+
+function siiDetailsSummaryText(){
+  const rut=$('#siiRutReceptor')?.value?.trim()||'';
+  const razon=$('#siiRazonReceptor')?.value?.trim()||'';
+  const comuna=$('#siiComunaReceptor')?.value?.trim()||'';
+  const ciudad=$('#siiCiudadReceptor')?.value?.trim()||'';
+  const telefono=$('#siiTelefonoReceptor')?.value?.trim()||'';
+  const vendedor=selectedSeller();
+  const tipo=Number($('#siiTipoDte')?.value||0);
+  const ref=$('#siiRefFolio')?.value?.trim()||'';
+  const parts=[];
+  if(razon||rut)parts.push([razon,rut].filter(Boolean).join(' · '));
+  if(comuna||ciudad)parts.push([comuna,ciudad].filter(Boolean).join(', '));if(telefono)parts.push(`Tel. ${telefono}`);if(vendedor?.nombre)parts.push(`Vendedor: ${vendedor.nombre}`);
+  if([56,61].includes(tipo)&&ref)parts.push(`Ref. folio ${ref}`);
+  if($('#siiIncludeCedible')?.checked)parts.push('Con copia cedible');
+  return parts.join(' · ')||'Completa o revisa los datos del receptor, referencias y despacho desde este botón.';
+}
+function syncSiiDetailsSummary(){const box=$('#siiDetailsSummary');if(box)box.textContent=siiDetailsSummaryText()}
+function closeSiiDetailsModal(){ const modal=$('#siiEmitDetailsModal');if(modal){modal.classList.add('hidden');modal.setAttribute('aria-hidden','true')} syncSiiDetailsSummary(); }
+function openSiiDetailsModal(){fillSiiSellerSelect(); const modal=$('#siiEmitDetailsModal');if(!modal)return;modal.classList.remove('hidden');modal.setAttribute('aria-hidden','false');document.body.classList.add('sii-modal-open');syncSiiDetailsSummary();const focusable=modal.querySelector('input,select,button,textarea');setTimeout(()=>focusable?.focus({preventScroll:true}),0); }
+
 async function openSiiManagerModal(id){try{await loadSiiBilling(false);if(id==="siiExchangeModal")await loadSiiExchange();if(id==="siiCertificationModal")await loadSiiCertification()}catch(err){console.warn("open sii manager",err);toast(`✕ ${err.message||err}`)}openSiiModal(id)}
 window.openOrderSiiIssue=async(orderId,tipoDte=33)=>{
   const o=data.orders.find(x=>String(x.id)===String(orderId));
@@ -3276,13 +3342,13 @@ window.openOrderSiiIssue=async(orderId,tipoDte=33)=>{
   if($('#siiIncludeCedible'))$('#siiIncludeCedible').checked=false;
   $('#siiPedidoId').value=String(o.numero_pedido||o.id||'');
   $('#siiRutReceptor').value=o.rut||'';
-  $('#siiRazonReceptor').value=o.razon_social||o.nombre||'';
+  $('#siiRazonReceptor').value=o.razon_social||o.nombre||'';if($('#siiTelefonoReceptor'))$('#siiTelefonoReceptor').value=o.telefono||'';if($('#siiObservaciones'))$('#siiObservaciones').value=o.observaciones||'';
   $('#siiGiroReceptor').value='';
   $('#siiDireccionReceptor').value=o.direccion||'';
   $('#siiComunaReceptor').value=o.comuna||'';
   $('#siiCiudadReceptor').value=o.ciudad||'';
   const ctx=$('#siiEmitContext');if(ctx)ctx.textContent=`Pedido ${o.numero_pedido||o.id} · ${SII_DTE_NAMES[Number(tipoDte)]||'Documento tributario'}`;
-  toggleSiiReferenceFields();openSiiModal('siiEmitModal');
+  toggleSiiReferenceFields();syncSiiDetailsSummary();openSiiModal('siiEmitModal');
   try{await loadSiiOrderData()}catch(err){console.warn('prefill sii order',err);toast('Revisa los datos tributarios del cliente antes de emitir.')}
 };
 async function loadSiiBilling(force=false){
@@ -3327,17 +3393,19 @@ function manualDteTotal(){return siiManualItems.reduce((sum,x)=>sum+(Number(x.ca
 function renderSiiManualItems(){const host=$("#siiManualItems");if(!host)return;const wh=$("#siiManualWarehouse")?.value||'';host.innerHTML=siiManualItems.length?siiManualItems.map((x,i)=>{const stock=x.producto_id?catalogAvailable(x.producto_id,x.tamano_id,wh):null;return `<div class="sii-manual-item"><input data-sii-manual-field="descripcion" data-sii-manual-index="${i}" value="${esc(x.descripcion||'')}" placeholder="Descripción"><input data-sii-manual-field="cantidad" data-sii-manual-index="${i}" type="number" min="0.001" step="0.001" value="${Number(x.cantidad||1)}"><input class="line-price" data-sii-manual-field="precio_unitario" data-sii-manual-index="${i}" type="text" inputmode="numeric" value="${new Intl.NumberFormat('es-CL',{maximumFractionDigits:0}).format(Number(x.precio_unitario||0))}">${stock===null?'<span class="line-stock">Sin stock asociado</span>':`<span class="line-stock">Stock ${Number(stock).toLocaleString('es-CL',{maximumFractionDigits:3})}</span>`}<button type="button" class="btn btn-light sii-manual-remove" data-sii-manual-remove="${i}"><i class="bi bi-trash3"></i></button></div>`}).join(''):'<div class="request-option-empty">Busca y selecciona productos del catálogo.</div>';if($("#siiManualTotal"))$("#siiManualTotal").textContent=money(manualDteTotal())}
 function renderSiiManualCatalogResults(){const host=$("#siiManualProductResults"),input=$("#siiManualProductSearch");if(!host||!input)return;const rows=catalogCandidates(input.value,$("#siiManualWarehouse")?.value||'');host.innerHTML=catalogResultsHtml(rows);host.classList.toggle('hidden',!input.value.trim()&&rows.length>14)}
 function syncSiiSourceModeUi(){
-  const source=$("#siiSourceMode"),active=window.FacturacionAPI?.activeCodeCached?.()||"",canDirect=Boolean(active&&active!=="SII_PROPIO");
+  const source=$("#siiSourceMode"),active=window.FacturacionAPI?.activeCodeCached?.()||"",providerKnown=Boolean(active),canDirect=!providerKnown||active!=="SII_PROPIO";
   if(source){const directOption=source.querySelector('option[value="DIRECTO"]');if(directOption)directOption.disabled=!canDirect;if(source.value==='DIRECTO'&&!canDirect)source.value='PEDIDO';}
   const direct=isDirectSiiSale(),tipo=Number($("#siiTipoDte")?.value||33);
-  if(direct&&![33,34].includes(tipo)){if($("#siiTipoDte"))$("#siiTipoDte").value='33';}
+  if(direct&&![33,34,39,41,52].includes(tipo)){if($("#siiTipoDte"))$("#siiTipoDte").value='33';}
   $$('.sii-order-source-field').forEach(el=>el.classList.toggle('hidden',direct));
   $("#siiOrderPreview")?.classList.toggle('hidden',direct||!siiLoadedOrderId);
   $("#siiManualSalePanel")?.classList.toggle('hidden',!direct);
   if(direct){if(!siiManualRequestId)siiManualRequestId=crypto.randomUUID?crypto.randomUUID():String(Date.now()+Math.random());fillWarehouseSelect('#siiManualWarehouse',{channel:'CPANEL'});if(!siiManualItems.length)renderSiiManualItems();}
   updateSiiIssueModeUi();
 }
-$("#siiSourceMode")?.addEventListener('change',()=>{if(isDirectSiiSale()){siiLoadedOrderId='';siiLoadedOrderItems=[];siiLoadedOrderDocs=[];if($("#siiPedidoId"))$("#siiPedidoId").value='';}syncSiiSourceModeUi()});
+function handleSiiSourceModeSelection(){if(isDirectSiiSale()){siiLoadedOrderId='';siiLoadedOrderItems=[];siiLoadedOrderDocs=[];if($("#siiPedidoId"))$("#siiPedidoId").value='';}syncSiiSourceModeUi()}
+$("#siiSourceMode")?.addEventListener('input',handleSiiSourceModeSelection);
+$("#siiSourceMode")?.addEventListener('change',handleSiiSourceModeSelection);
 $("#siiManualProductSearch")?.addEventListener('focus',renderSiiManualCatalogResults);$("#siiManualProductSearch")?.addEventListener('input',renderSiiManualCatalogResults);
 $("#siiManualWarehouse")?.addEventListener('change',()=>{renderSiiManualItems();renderSiiManualCatalogResults()});
 $("#siiManualProductResults")?.addEventListener('click',e=>{const b=e.target.closest('[data-catalog-index]');if(!b)return;const rows=catalogCandidates($("#siiManualProductSearch")?.value||'',$("#siiManualWarehouse")?.value||''),c=rows[Number(b.dataset.catalogIndex)];if(!c)return;siiManualItems.push(normalizeOrderDraftItem(catalogLineFromCandidate(c)));renderSiiManualItems();$("#siiManualProductSearch").value='';$("#siiManualProductResults").classList.add('hidden');$("#siiManualProductSearch").focus()});
@@ -3372,7 +3440,7 @@ function updateSiiIssueModeUi(){
     btn.innerHTML=prior?.estado==='EMITIDO'&&!different?'<i class="bi bi-eye"></i> Ver documento':'<i class="bi bi-receipt"></i> Emitir DTE';
     btn.disabled=Boolean(prior&&(different||prior.estado!=='EMITIDO'));
     if(prior&&different)showStatus(`Este pedido ya tiene ${SII_DTE_NAMES[Number(prior.tipo_dte)]||`DTE ${prior.tipo_dte}`} folio ${Number(prior.folio||0).toLocaleString('es-CL')}. Para corregirlo usa Nota de Crédito/Débito.`,'error');
-    else showStatus(prior&&prior.estado!=='EMITIDO'?'Emisión pendiente de revisión. Abre el historial antes de volver a emitir.':direct?`Venta manual directa · ${window.FacturacionAPI?.label?.(activeBillingProvider)||activeBillingProvider} · ${env}`:`Proveedor activo: ${window.FacturacionAPI?.label?.(activeBillingProvider)||activeBillingProvider} · ${env}`,prior&&prior.estado!=='EMITIDO'?'warn':'ok');
+    else showStatus(prior&&prior.estado!=='EMITIDO'?'Emisión pendiente de revisión. Abre el historial antes de volver a emitir.':direct?`${tipo===52?'Guía directa':'Venta manual directa'} · ${window.FacturacionAPI?.label?.(activeBillingProvider)||activeBillingProvider} · ${env}`:`Proveedor activo: ${window.FacturacionAPI?.label?.(activeBillingProvider)||activeBillingProvider} · ${env}`,prior&&prior.estado!=='EMITIDO'?'warn':'ok');
     return;
   }
 
@@ -3405,7 +3473,7 @@ function updateSiiIssueModeUi(){
   if(!m.official){btn.disabled=true;showStatus("CAF no disponible","error")}
 }
 window.updateSiiIssueModeUi=updateSiiIssueModeUi;
-function toggleSiiReferenceFields(){let tipo=Number($("#siiTipoDte")?.value||0);if(isDirectSiiSale()&&![33,34].includes(tipo)){tipo=33;$("#siiTipoDte").value='33'}const show=[56,61].includes(tipo),boleta=[39,41].includes(tipo);$$('.sii-reference-field').forEach(x=>x.classList.toggle('hidden',!show));$$('.sii-boleta-format-field').forEach(x=>x.classList.toggle('hidden',!boleta));if(boleta&&$("#siiBoletaPrintFormat")&&!$("#siiBoletaPrintFormat").value)$("#siiBoletaPrintFormat").value=siiState.config?.boleta_formato||"TICKET_80";syncSiiSourceModeUi()}
+function toggleSiiReferenceFields(){let tipo=Number($("#siiTipoDte")?.value||0);if(isDirectSiiSale()&&![33,34,39,41,52].includes(tipo)){tipo=33;$("#siiTipoDte").value='33'}const show=[56,61].includes(tipo),boleta=[39,41].includes(tipo);$$('.sii-reference-field').forEach(x=>x.classList.toggle('hidden',!show));$$('.sii-boleta-format-field').forEach(x=>x.classList.toggle('hidden',!boleta));if(boleta&&$("#siiBoletaPrintFormat")&&!$("#siiBoletaPrintFormat").value)$("#siiBoletaPrintFormat").value=siiState.config?.boleta_formato||"TICKET_80";syncSiiManualMoveStockUi();syncSiiSourceModeUi()}
 function siiPdfMoney(v){return new Intl.NumberFormat('es-CL',{style:'currency',currency:'CLP',maximumFractionDigits:0}).format(Number(v||0))}
 function siiPdfText(v){return String(v??'').replace(/[\r\n]+/g,' ').trim()}
 function siiPdfDate(v){if(!v)return'';const s=String(v).slice(0,10),m=s.match(/^(\d{4})-(\d{2})-(\d{2})$/);return m?`${m[3]}-${m[2]}-${m[1]}`:s}
@@ -3517,7 +3585,7 @@ async function loadSiiOrderData(){
   const ref=$("#siiPedidoId").value.trim();if(!ref)return toast("Ingresa el ID, N.º de pedido o solo el número; por ejemplo 24");
   const out=window.FacturacionAPI?await FacturacionAPI.orderPreview(ref,token):await SiiAPI.orderPreview(ref,token),o=out?.pedido||{};if(!o?.id)throw new Error("PEDIDO_NO_ENCONTRADO");
   siiLoadedOrderId=String(o.id);siiLoadedOrderDocs=Array.isArray(out.documentos_existentes)?out.documentos_existentes:[];siiLoadedOrderItems=Array.isArray(out.items)?out.items:[];
-  $("#siiPedidoId").value=o.numero_pedido||ref;$("#siiRutReceptor").value=o.rut||"";if($("#siiRutReceptor"))$("#siiRutReceptor").dataset.clientLookupResolvedRut=normalizeRutChile(o.rut||"");$("#siiRazonReceptor").value=o.razon_social||o.nombre||"";$("#siiGiroReceptor").value=o.giro||"";$("#siiDireccionReceptor").value=o.direccion||"";$("#siiComunaReceptor").value=o.comuna||"";$("#siiCiudadReceptor").value=o.ciudad||"";
+  $("#siiPedidoId").value=o.numero_pedido||ref;$("#siiRutReceptor").value=o.rut||"";if($("#siiRutReceptor"))$("#siiRutReceptor").dataset.clientLookupResolvedRut=normalizeRutChile(o.rut||"");$("#siiRazonReceptor").value=o.razon_social||o.nombre||"";$("#siiGiroReceptor").value=o.giro||"";$("#siiDireccionReceptor").value=o.direccion||"";$("#siiComunaReceptor").value=o.comuna||"";$("#siiCiudadReceptor").value=o.ciudad||"";if($("#siiTelefonoReceptor"))$("#siiTelefonoReceptor").value=o.telefono||"";if($("#siiObservaciones"))$("#siiObservaciones").value=o.observaciones||"";
   const preview=$("#siiOrderPreview");if(preview){
     const previewTipo=Number($("#siiTipoDte").value||0),fiscalReceiver=[33,34,56,61].includes(previewTipo),missing=(fiscalReceiver?[!o.rut&&"RUT",!($("#siiRazonReceptor").value)&&"razón social",!o.giro&&"giro",!o.direccion&&"dirección",!o.comuna&&"comuna"]:[]).filter(Boolean),docs=siiLoadedOrderDocs.filter(x=>SINGLE_SII_ORDER_TYPES.has(Number(x.tipo_dte)));
     const giroInfo=fiscalReceiver?(o.giro_desde_clientes?`<small class="ok"><i class="bi bi-database-check"></i> Giro cargado desde el maestro de Clientes.</small>`:o.cliente_en_registro?`<small class="warn"><i class="bi bi-database-exclamation"></i> El cliente existe en Clientes, pero no tiene Giro registrado. Complétalo aquí; al emitir quedará guardado en su ficha.</small>`:`<small class="warn"><i class="bi bi-person-plus"></i> Este RUT aún no está en Clientes. El Giro se dejó en blanco. Completa los datos tributarios y, al emitir, el cliente será creado y vinculado al pedido.</small>`):`<small class="ok"><i class="bi bi-receipt-cutoff"></i> Boleta 39/41: el Giro del receptor no forma parte del XML. Si no hay RUT, el backend puede usar el RUT genérico 66.666.666-6 permitido para venta/servicio no periódico.</small>`;
@@ -3584,7 +3652,7 @@ async function openExternalBillingPdf(tipo,folio,targetWindow=null,providerCode=
 }
 async function emitActiveExternalDte(tipo,pedido_id,extra={}){
   const includeCedible=Boolean($('#siiIncludeCedible')?.checked)&&[33,34,52].includes(Number(tipo));
-  const payload={tipo_dte:tipo,pedido_id:siiLoadedOrderId||pedido_id,rut_receptor:$("#siiRutReceptor").value.trim(),razon_social_receptor:$("#siiRazonReceptor").value.trim(),giro_receptor:$("#siiGiroReceptor").value.trim(),direccion_receptor:$("#siiDireccionReceptor").value.trim(),comuna_receptor:$("#siiComunaReceptor").value.trim(),ciudad_receptor:$("#siiCiudadReceptor").value.trim(),incluir_cedible:includeCedible,...extra};
+  const seller=selectedSeller();const payload={tipo_dte:tipo,pedido_id:siiLoadedOrderId||pedido_id,rut_receptor:$("#siiRutReceptor").value.trim(),razon_social_receptor:$("#siiRazonReceptor").value.trim(),giro_receptor:$("#siiGiroReceptor").value.trim(),direccion_receptor:$("#siiDireccionReceptor").value.trim(),comuna_receptor:$("#siiComunaReceptor").value.trim(),ciudad_receptor:$("#siiCiudadReceptor").value.trim(),telefono_receptor:$("#siiTelefonoReceptor")?.value.trim()||"",vendedor_id:seller?.id||"",vendedor_nombre:seller?.nombre||"",observaciones:$("#siiObservaciones")?.value.trim()||"",incluir_cedible:includeCedible,...extra};
   if(tipo===52){payload.tipo_despacho=Number($("#fclTipoDespacho").value);payload.ind_traslado=Number($("#fclIndTraslado").value);payload.transporte={patente:$("#fclPatente").value.trim(),rut_transportista:$("#fclRutTrans").value.trim()}}
   if([56,61].includes(tipo)){
     if(!$("#siiRefFolio").value.trim())return toast("La Nota requiere el folio del documento de referencia");
@@ -3625,16 +3693,17 @@ async function emitActiveExternalDte(tipo,pedido_id,extra={}){
 async function emitSiiDte(){
   const tipo=Number($("#siiTipoDte").value),direct=isDirectSiiSale(),pedido_id=$("#siiPedidoId").value.trim();
   if(direct){
-    if(![33,34].includes(tipo))return toast("La venta manual directa está habilitada solo para Factura 33 o Factura Exenta 34.");
+    if(![33,34,39,41,52].includes(tipo))return toast("La emisión manual directa está habilitada para Factura 33/34, Boleta 39/41 o Guía de Despacho 52.");
     if(!siiManualItems.length)return toast("Agrega al menos un producto a la venta directa.");
     const items=siiManualItems.map(x=>({producto_id:x.producto_id||null,producto_nombre:x.producto_nombre||x.descripcion,tamano_id:x.tamano_id||null,tamano_nombre:x.tamano_nombre||null,descripcion:x.descripcion,cantidad:Number(x.cantidad||0),precio_unitario:Number(x.precio_unitario||0),subtotal:Math.round(Number(x.cantidad||0)*Number(x.precio_unitario||0))})).filter(x=>x.cantidad>0&&x.precio_unitario>=0);
     if(!items.length)return toast("Revisa las cantidades y precios de la venta directa.");
     if(!siiManualRequestId)siiManualRequestId=crypto.randomUUID?crypto.randomUUID():String(Date.now()+Math.random());
     const payload={manual_sale:true,manual_request_id:siiManualRequestId,items,total:manualDteTotal(),bodega_id:$("#siiManualWarehouse")?.value||"",mueve_stock:Boolean($("#siiManualMoveStock")?.checked)};
+    if(tipo===52&&payload.mueve_stock&&Number($("#fclIndTraslado")?.value||0)===5)return toast("Para una Guía 52 de traslado interno usa el módulo de Traslados entre bodegas. Así se registra salida y entrada correctamente.");
     if(payload.mueve_stock&&!payload.bodega_id)return toast("Selecciona la bodega de salida para descontar stock.");
     if(payload.mueve_stock&&items.some(x=>!x.producto_id))return toast("Para descontar stock, todas las líneas deben provenir del catálogo de productos.");
     if(window.FacturacionAPI){await FacturacionAPI.load(false,token);const active=FacturacionAPI.activeCodeCached();if(active&&active!=="SII_PROPIO"){const out=await emitActiveExternalDte(tipo,"",payload);if(out?.ok){siiManualItems=[];siiManualRequestId="";renderSiiManualItems();}return out;}}
-    return toast("La venta manual directa con movimiento de stock está habilitada para Facturacion.cl. Para Facturación Propia usa un pedido.");
+    return toast("La emisión manual directa con movimiento de stock está habilitada para Facturacion.cl. Para Facturación Propia usa un pedido.");
   }
   if(!pedido_id)return toast("Ingresa el ID, N.º de pedido o solo el número; por ejemplo 24");
   if(!siiLoadedOrderId)return toast("Primero busca/carga el pedido y revisa su detalle antes de generar el documento.");
@@ -3651,7 +3720,7 @@ async function emitSiiDte(){
   }
   if(mode.mode==="PRUEBA_LOCAL_SIN_FOLIOS")return toast("No hay folios PRUEBA LOCAL disponibles para este DTE");if(mode.mode==="SII"&&!mode.official)return toast("No hay CAF oficial disponible para este DTE. Selecciona PRUEBA LOCAL o importa un CAF SII.");
   if([39,41].includes(tipo)&&mode.mode==="SII"&&!siiState.config?.boleta_api_habilitada)return toast("La API REST real de Boleta está instalada pero deshabilitada. Mantén PRUEBA LOCAL o actívala en Configuración tributaria cuando inicies certificación real.");if([39,41].includes(tipo)&&mode.mode==="SII"&&String(siiState.config?.boleta_modelo_emision||"POR_DEFINIR").toUpperCase()==="POR_DEFINIR")return toast("Define primero el modelo de emisión de Boleta que declaraste en el SII.");
-  const local=mode.mode==="PRUEBA_LOCAL",payload={tipo_dte:tipo,pedido_id,enviar_sii:!local,modo_prueba_local:local,rut_receptor:$("#siiRutReceptor").value.trim(),razon_social_receptor:$("#siiRazonReceptor").value.trim(),giro_receptor:$("#siiGiroReceptor").value.trim(),direccion_receptor:$("#siiDireccionReceptor").value.trim(),comuna_receptor:$("#siiComunaReceptor").value.trim(),ciudad_receptor:$("#siiCiudadReceptor").value.trim(),formato_impresion:[39,41].includes(tipo)?($("#siiBoletaPrintFormat")?.value||siiState.config?.boleta_formato||"TICKET_80"):"A4"};
+  const local=mode.mode==="PRUEBA_LOCAL",seller=selectedSeller(),payload={tipo_dte:tipo,pedido_id,enviar_sii:!local,modo_prueba_local:local,rut_receptor:$("#siiRutReceptor").value.trim(),razon_social_receptor:$("#siiRazonReceptor").value.trim(),giro_receptor:$("#siiGiroReceptor").value.trim(),direccion_receptor:$("#siiDireccionReceptor").value.trim(),comuna_receptor:$("#siiComunaReceptor").value.trim(),ciudad_receptor:$("#siiCiudadReceptor").value.trim(),telefono_receptor:$("#siiTelefonoReceptor")?.value.trim()||"",vendedor_id:seller?.id||"",vendedor_nombre:seller?.nombre||"",observaciones:$("#siiObservaciones")?.value.trim()||"",formato_impresion:[39,41].includes(tipo)?($("#siiBoletaPrintFormat")?.value||siiState.config?.boleta_formato||"TICKET_80"):"A4"};
   if([33,34,56,61].includes(tipo)&&(!payload.rut_receptor||!payload.razon_social_receptor||!payload.giro_receptor||!payload.direccion_receptor||!payload.comuna_receptor))return toast("Factura/Nota requiere RUT, razón social, giro, dirección y comuna del receptor.");if([56,61].includes(tipo)){if(!$("#siiRefFolio").value.trim())return toast("La Nota requiere el folio del documento de referencia");payload.referencia={tipo_dte:$("#siiRefTipo").value.trim()||"33",folio:$("#siiRefFolio").value.trim(),fecha:$("#siiRefFecha").value,codigo:Number($("#siiRefCodigo").value||1),razon:$("#siiRefRazon").value.trim()||"Referencia tributaria"}}
   let pdfWindow=null;try{pdfWindow=window.open('about:blank','_blank');if(pdfWindow)pdfWindow.document.write('<title>Generando DTE</title><body style="font-family:Arial,sans-serif;padding:30px">Generando representación PDF del DTE…</body>');const out=await SiiAPI.issue(payload,token);
     if(out?.duplicado||out?.reutilizado){const detail=await SiiAPI.detail(out.documento_id,token);if(detail?.representacion){const pdf=await generateSiiRepresentationPdf(detail.representacion,pdfWindow);await persistSiiPdf(out.documento_id,pdf)}else pdfWindow?.close();siiLoadedOrderDocs=[out,...siiLoadedOrderDocs.filter(x=>String(x.id)!==String(out.documento_id))];updateSiiIssueModeUi();toast(`✓ El pedido ya tenía ${SII_DTE_NAMES[tipo]||`DTE ${tipo}`} folio ${Number(out.folio||0).toLocaleString('es-CL')} · no se consumió otro folio`);return out}
@@ -3688,6 +3757,17 @@ $('#folioSeriesTable')?.addEventListener('click',e=>{const edit=e.target.closest
 
 $$('[data-sii-open]').forEach(b=>b.addEventListener('click',()=>openSiiManagerModal(b.dataset.siiOpen)));
 $$('[data-sii-close]').forEach(b=>b.addEventListener('click',closeSiiModals));
+
+$('#siiManualMoveStock')?.addEventListener('change',syncSiiManualMoveStockUi);
+syncSiiManualMoveStockUi();
+$('#siiOpenDetailsModal')?.addEventListener('click',openSiiDetailsModal);
+$('#closeSiiDetailsModal')?.addEventListener('click',closeSiiDetailsModal);
+$('#cancelSiiDetailsModal')?.addEventListener('click',closeSiiDetailsModal);
+$('#siiSaveDetailsModal')?.addEventListener('click',closeSiiDetailsModal);
+['#siiRutReceptor','#siiRazonReceptor','#siiGiroReceptor','#siiDireccionReceptor','#siiComunaReceptor','#siiCiudadReceptor','#siiTelefonoReceptor','#siiObservaciones','#siiRefFolio','#siiRefFecha','#siiRefCodigo','#siiRefRazon','#siiIncludeCedible','#fclTipoDespacho','#fclIndTraslado','#fclPatente','#fclRutTrans'].forEach(sel=>$(sel)?.addEventListener('input',syncSiiDetailsSummary));
+['#siiRutReceptor','#siiRazonReceptor','#siiGiroReceptor','#siiDireccionReceptor','#siiComunaReceptor','#siiCiudadReceptor','#siiTelefonoReceptor','#siiVendedorId','#siiObservaciones','#siiRefTipo','#siiRefFolio','#siiRefFecha','#siiRefCodigo','#siiRefRazon','#siiIncludeCedible','#fclMontoNota','#fclTipoDespacho','#fclIndTraslado','#fclPatente','#fclRutTrans','#siiTipoDte'].forEach(sel=>$(sel)?.addEventListener('change',syncSiiDetailsSummary));
+syncSiiDetailsSummary();
+
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.body.classList.contains('sii-modal-open'))closeSiiModals()});
 $$('.admin-nav button').forEach(b=>b.addEventListener('click',()=>{if(document.body.classList.contains('sii-modal-open'))closeSiiModals()}));
 $(".admin-nav button[data-view='billing-sii']")?.addEventListener("click",async()=>{try{if(window.FacturacionAPI)await FacturacionAPI.load(true,token)}catch(err){console.warn("billing provider load",err)}loadSiiBilling(false)});
@@ -3704,7 +3784,7 @@ $("#siiLoadOrder")?.addEventListener("click",e=>busy(e.currentTarget,async()=>{t
 wireClientRutLookup({
   rutSelector:"#siiRutReceptor",
   statusSelector:"#siiClientLookupState",
-  fields:{businessName:"#siiRazonReceptor",activity:"#siiGiroReceptor",address:"#siiDireccionReceptor",commune:"#siiComunaReceptor",city:"#siiCiudadReceptor"},
+  fields:{businessName:"#siiRazonReceptor",activity:"#siiGiroReceptor",phone:"#siiTelefonoReceptor",address:"#siiDireccionReceptor",commune:"#siiComunaReceptor",city:"#siiCiudadReceptor"},
   mode:"overwrite",
   auto:true,
   autoDelay:320,
