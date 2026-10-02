@@ -3103,3 +3103,9 @@ body.product-modal-open{overflow:hidden!important}
   #brandLogo,.brand img,.brand-wordmark-single{max-width:130px !important;max-height:50px !important}
   .site-footer .footer-logo,.footer-logo,.footer-logo-only img{max-width:190px !important;max-height:76px !important}
 }
+
+
+/* R9.18.227 · Producción visual: interacción consistente */
+:focus-visible{outline:2px solid rgba(111,70,80,.42);outline-offset:2px}
+button,a,.btn,input,select,textarea{ -webkit-tap-highlight-color:transparent }
+@media(max-width:600px){button,.btn,input,select{min-height:44px}.modal-card,.product-detail-card{max-width:calc(100vw - 20px)}}

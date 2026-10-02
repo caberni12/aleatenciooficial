@@ -1,2 +1,2 @@
-R9.18.219
-Multi-DTE por pedido en Portal Mayorista + foto de perfil proporcional
+R9.18.227
+MODO PRODUCCIÓN VISUAL FINAL + LIMPIEZA DE TEXTOS TÉCNICOS + CONSERVA R9.18.226

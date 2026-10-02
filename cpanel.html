@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
-  <link rel="stylesheet" href="./styles.css?v=R9.18.178"><link rel="stylesheet" href="./cpanel.css?v=R9.18.216">
+  <link rel="stylesheet" href="./styles.css?v=R9.18.227"><link rel="stylesheet" href="./cpanel.css?v=R9.18.227">
   <style id="ale-production-css-fallback-r918151">
 /* R9.18.152: fallback embebido para GitHub Pages/Cloudflare. Mantener también archivos CSS externos. */
 :root{
@@ -7467,6 +7467,306 @@ body > #requestClientEditor:not(.hidden) .editor-actions{
 }
 
 </style>
+
+<style id="ale-final-ui-r918226">
+/* =========================================================
+   R9.18.226 · CIERRE VISUAL FINAL
+   - Corrige checkbox "Producto destacado".
+   - Separa checkbox/radio de los estilos globales de inputs.
+   - Normaliza foco, overflow, acciones, tablas y responsive.
+   ========================================================= */
+.admin-body .admin-view,
+.admin-body .admin-card,
+.admin-body .card-head,
+.admin-body .card-head-actions,
+.admin-body .admin-toolbar,
+.admin-body .form-grid,
+.admin-body .form-grid > *,
+.admin-body .table-wrap,
+.admin-body [role="dialog"],
+.admin-body [role="dialog"] > *,
+.admin-body [role="dialog"] .field-group{
+  min-width:0 !important;
+}
+
+.admin-body .row-actions,
+.admin-body .card-head-actions,
+.admin-body .editor-actions{
+  flex-wrap:wrap !important;
+}
+
+.admin-body .btn,
+.admin-body .row-actions button{
+  max-width:100%;
+}
+
+.admin-body .btn > span,
+.admin-body .btn > i{
+  min-width:0;
+}
+
+.admin-body .table-wrap{
+  scrollbar-width:thin;
+  scrollbar-color:#c7cdd3 transparent;
+}
+.admin-body .table-wrap::-webkit-scrollbar{height:9px;width:9px}
+.admin-body .table-wrap::-webkit-scrollbar-thumb{background:#c7cdd3;border-radius:999px}
+.admin-body .table-wrap::-webkit-scrollbar-track{background:transparent}
+
+/* Checkboxes nativos que deben conservar dimensiones reales. */
+#inventoryImportForce,
+#fclReviewConfirmed,
+#systemResetConsent{
+  appearance:auto !important;
+  -webkit-appearance:checkbox !important;
+  width:18px !important;
+  min-width:18px !important;
+  max-width:18px !important;
+  height:18px !important;
+  min-height:18px !important;
+  max-height:18px !important;
+  padding:0 !important;
+  margin:0 !important;
+  border:initial !important;
+  border-radius:3px !important;
+  background:initial !important;
+  box-shadow:none !important;
+  accent-color:#5d463e !important;
+  flex:0 0 18px !important;
+}
+.inventory-force-row{align-items:flex-start !important}
+#fclReviewModal .field-group > span:has(#fclReviewConfirmed){
+  display:flex !important;
+  align-items:flex-start !important;
+  gap:9px !important;
+  line-height:1.45 !important;
+}
+
+/* Producto destacado: switch estable en desktop/tablet/móvil. */
+.product-featured-control{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  gap:16px !important;
+  width:100% !important;
+  margin:14px 0 0 !important;
+  padding:13px 14px !important;
+  border:1px solid #dfe4e8 !important;
+  border-radius:12px !important;
+  background:#f8fafb !important;
+  color:#26313d !important;
+  cursor:pointer !important;
+  transition:border-color .18s ease,background .18s ease,box-shadow .18s ease !important;
+}
+.product-featured-control:hover{
+  border-color:#c9d0d7 !important;
+  background:#fff !important;
+}
+.product-featured-control:has(#pFeatured:checked){
+  border-color:#c9b7af !important;
+  background:#fffaf7 !important;
+  box-shadow:0 0 0 3px rgba(93,70,62,.05) !important;
+}
+.product-featured-copy{
+  display:grid !important;
+  gap:3px !important;
+  min-width:0 !important;
+}
+.product-featured-copy strong{
+  font-size:12px !important;
+  line-height:1.25 !important;
+  font-weight:850 !important;
+  color:#334155 !important;
+}
+.product-featured-copy small{
+  display:block !important;
+  font-size:10.5px !important;
+  line-height:1.35 !important;
+  font-weight:600 !important;
+  color:#7a8794 !important;
+}
+.product-featured-switch{
+  position:relative !important;
+  display:inline-flex !important;
+  width:48px !important;
+  min-width:48px !important;
+  height:26px !important;
+  flex:0 0 48px !important;
+}
+.admin-body #productEditor .product-featured-switch #pFeatured[type="checkbox"]{
+  position:absolute !important;
+  inset:0 !important;
+  width:1px !important;
+  min-width:1px !important;
+  max-width:1px !important;
+  height:1px !important;
+  min-height:1px !important;
+  max-height:1px !important;
+  padding:0 !important;
+  margin:0 !important;
+  border:0 !important;
+  opacity:0 !important;
+  pointer-events:none !important;
+  box-shadow:none !important;
+}
+.product-featured-slider{
+  position:absolute !important;
+  inset:0 !important;
+  border-radius:999px !important;
+  background:#cbd3da !important;
+  box-shadow:inset 0 0 0 1px rgba(15,23,42,.05) !important;
+  transition:background .18s ease,box-shadow .18s ease !important;
+}
+.product-featured-slider::after{
+  content:"" !important;
+  position:absolute !important;
+  top:3px !important;
+  left:3px !important;
+  width:20px !important;
+  height:20px !important;
+  border-radius:50% !important;
+  background:#fff !important;
+  box-shadow:0 2px 6px rgba(15,23,42,.22) !important;
+  transition:transform .18s ease !important;
+}
+#pFeatured:checked + .product-featured-slider{
+  background:#5d463e !important;
+}
+#pFeatured:checked + .product-featured-slider::after{
+  transform:translateX(22px) !important;
+}
+.product-featured-control:focus-within .product-featured-slider{
+  box-shadow:0 0 0 3px rgba(93,70,62,.16) !important;
+}
+
+/* Controles y acciones: no desbordar en resoluciones intermedias. */
+.admin-body .admin-toolbar > input,
+.admin-body .admin-toolbar > select,
+.admin-body .admin-toolbar > button,
+.admin-body .card-head-actions > *{
+  min-width:0;
+}
+.admin-body input,
+.admin-body select,
+.admin-body textarea{
+  max-width:100%;
+}
+.admin-body .field-group,
+.admin-body .field-group > span,
+.admin-body .field-group > small,
+.admin-body .admin-table td,
+.admin-body .admin-table th{
+  overflow-wrap:anywhere;
+}
+
+/* Foco visible accesible sin alterar el diseño. */
+.admin-body button:focus-visible,
+.admin-body a:focus-visible,
+.admin-body select:focus-visible,
+.admin-body input:focus-visible,
+.admin-body textarea:focus-visible,
+.product-featured-control:focus-within{
+  outline:2px solid rgba(93,70,62,.38) !important;
+  outline-offset:2px !important;
+}
+
+/* Producto: edición estable y acciones visibles. */
+#productEditor .product-editor-fields{overflow:visible !important}
+#productEditor .editor-actions{
+  backdrop-filter:blur(5px);
+  -webkit-backdrop-filter:blur(5px);
+}
+#productEditor .file-field{
+  min-width:0 !important;
+}
+#productEditor .file-name,
+#productEditor .current-product-image{
+  max-width:100% !important;
+}
+
+/* Ajustes finales móvil/tablet. */
+@media(max-width:760px){
+  .admin-body .admin-toolbar{
+    width:100% !important;
+    align-items:stretch !important;
+  }
+  .admin-body .admin-toolbar > input,
+  .admin-body .admin-toolbar > select,
+  .admin-body .admin-toolbar > button{
+    width:100% !important;
+  }
+  .admin-body .card-head-actions{
+    align-items:stretch !important;
+  }
+  .admin-body .card-head-actions > .btn,
+  .admin-body .card-head-actions > a.btn{
+    min-width:0 !important;
+  }
+  .product-featured-control{
+    padding:12px !important;
+    gap:12px !important;
+  }
+}
+@media(max-width:480px){
+  .product-featured-control{
+    align-items:flex-start !important;
+  }
+  .product-featured-switch{
+    margin-top:1px !important;
+  }
+  .admin-body .editor-actions .btn{
+    width:100% !important;
+    flex:1 1 100% !important;
+  }
+}
+</style>
+
+<style id="ale-production-ui-r918227">
+/* =========================================================
+   R9.18.227 · MODO PRODUCCIÓN VISUAL
+   Limpia textos técnicos de la interfaz y unifica acabado final.
+   ========================================================= */
+:root{--prod-radius:14px;--prod-line:#e6e9ed;--prod-shadow:0 14px 36px rgba(39,45,52,.08)}
+.admin-body .admin-card,.admin-body .editor,.admin-body [role="dialog"]{box-shadow:var(--prod-shadow)}
+.admin-body .admin-card,.admin-body .editor{border-color:var(--prod-line)}
+.admin-body input:not([type="checkbox"]):not([type="radio"]),
+.admin-body select,.admin-body textarea{transition:border-color .18s ease,box-shadow .18s ease,background .18s ease}
+.admin-body input:not([type="checkbox"]):not([type="radio"]):focus,
+.admin-body select:focus,.admin-body textarea:focus{border-color:#b9a49b!important;box-shadow:0 0 0 3px rgba(93,70,62,.08)!important;background:#fff!important}
+.admin-body .btn{transition:transform .12s ease,box-shadow .18s ease,background .18s ease,border-color .18s ease}
+@media(hover:hover){.admin-body .btn:not(:disabled):hover{transform:translateY(-1px)}}
+.admin-body .module-help,.admin-body .field-hint,.admin-body .form-help{line-height:1.5}
+.admin-body .empty-state,.admin-body .empty-card{border-radius:var(--prod-radius)}
+
+/* La interfaz solo muestra el estado de la imagen, nunca su proveedor técnico. */
+.current-product-image{
+  margin-top:7px!important;padding:7px 9px!important;border:1px solid #e8ecef!important;
+  border-radius:10px!important;background:#f8fafb!important;color:#596673!important;gap:8px!important;
+}
+.image-source-copy{font-size:11px!important;font-weight:700!important;color:#53606d!important}
+.image-source-badge{
+  padding:4px 8px!important;border-radius:999px!important;background:#eef7f1!important;
+  color:#2f6b47!important;border:1px solid #d3eadb!important;font-size:10.5px!important;font-weight:800!important;
+}
+.image-source-badge.local,.image-source-badge.supabase,.image-source-badge.remote,
+.image-source-badge.published,.image-source-badge.ready{background:#eef7f1!important;color:#2f6b47!important;border-color:#d3eadb!important}
+
+/* Etiquetas de estado legibles para operación, sin TRUE/FALSE técnicos. */
+.stock-visibility-value{min-width:72px!important;text-align:center!important;text-transform:none!important;letter-spacing:0!important}
+.sii-stock-state{text-transform:none!important;letter-spacing:0!important}
+
+/* Modales y formularios más limpios en pantallas pequeñas. */
+@media(max-width:760px){
+  .admin-body [role="dialog"],.admin-body .editor{border-radius:18px!important}
+  .admin-body .card-head h2{line-height:1.12}
+  .current-product-image{align-items:flex-start!important}
+  .image-source-copy{white-space:normal!important;overflow-wrap:anywhere!important}
+}
+@media(max-width:480px){
+  .admin-body .btn,.admin-body button,.admin-body select,.admin-body input:not([type="checkbox"]):not([type="radio"]){min-height:44px}
+  .admin-body .admin-card{padding-left:16px!important;padding-right:16px!important}
+}
+</style>
 </head>
 <body class="admin-body auth-locked">
 <div class="login-screen" id="loginScreen">
@@ -7678,7 +7978,10 @@ body > #requestClientEditor:not(.hidden) .editor-actions{
                 <div class="field-group file-field" data-file-picker="image"><span>Foto</span><input id="pImage" class="file-input" type="file" accept="image/*"><label class="file-picker-btn" for="pImage"><i class="bi bi-camera"></i><span class="file-picker-text">Seleccionar imagen</span></label><small class="file-name">Sin archivo seleccionado</small><small class="current-product-image" id="pCurrentImageName"></small></div>
                 <label class="field-group span-2"><span>Descripción</span><textarea id="pDescription" placeholder="Descripción del producto"></textarea></label>
               </div>
-              <label class="check"><input id="pFeatured" type="checkbox"> Mostrar como destacado</label>
+              <label class="product-featured-control" for="pFeatured">
+                <span class="product-featured-copy"><strong>Producto destacado</strong><small>Mostrar este producto con prioridad visual en la Web.</small></span>
+                <span class="product-featured-switch" aria-hidden="true"><input id="pFeatured" type="checkbox"><span class="product-featured-slider"></span></span>
+              </label>
             </div>
           </div>
           <div class="editor-actions"><button class="btn btn-primary" id="saveProduct">Guardar</button><button class="btn btn-light" data-cancel="productEditor">Cancelar</button></div>
@@ -7698,10 +8001,10 @@ body > #requestClientEditor:not(.hidden) .editor-actions{
         </div>
         <div class="admin-toolbar product-toolbar"><input id="productSearch" placeholder="Buscar producto..."><select id="productFilter"><option value="">Todas las categorías</option></select><select id="productStatusFilter"><option value="">Todos los estados</option><option value="SI">Activo</option><option value="NO">Inactivo</option></select><button class="btn btn-light" id="clearProductFilter" type="button">Ver todos</button></div>
         <div class="product-stock-visibility-bar" id="productStockVisibilityBar">
-          <div class="product-stock-visibility-copy"><span class="eyebrow">Visibilidad en tienda</span><strong>Mostrar stock a clientes</strong><small id="productShowStockClientsHint">FALSE: el inventario sigue funcionando, pero el cliente solo ve producto, tamaño y precio.</small></div>
+          <div class="product-stock-visibility-copy"><span class="eyebrow">Visibilidad en tienda</span><strong>Mostrar stock a clientes</strong><small id="productShowStockClientsHint">El inventario sigue funcionando, pero el stock no se muestra al cliente.</small></div>
           <label class="product-global-stock-switch" for="productShowStockClients">
             <span class="stock-policy-switch stock-visibility-switch"><input id="productShowStockClients" type="checkbox" aria-describedby="productShowStockClientsHint"><span class="stock-policy-slider" aria-hidden="true"></span></span>
-            <span class="stock-visibility-value is-false" id="productShowStockClientsValue">FALSE</span>
+            <span class="stock-visibility-value is-false" id="productShowStockClientsValue">Oculto</span>
           </label>
         </div>
         <div class="product-results-meta" id="productResultsMeta">Mostrando todos los productos</div>
@@ -7750,7 +8053,7 @@ body > #requestClientEditor:not(.hidden) .editor-actions{
 
     <section class="admin-view" id="view-web-content">
       <div class="admin-card web-content-admin">
-        <div class="card-head"><div><span class="eyebrow">Contenido de la Web</span><h2>Políticas · Misión · Visión · Valores</h2><p class="module-help">Edita directamente los textos públicos de la página web. Los cambios se guardan en Supabase y se muestran en la Web sin modificar código.</p></div><button class="btn btn-primary" id="saveWebContent" type="button"><i class="bi bi-floppy"></i> Guardar contenido</button></div>
+        <div class="card-head"><div><span class="eyebrow">Contenido de la Web</span><h2>Políticas · Misión · Visión · Valores</h2><p class="module-help">Edita directamente los textos públicos de la página web. Los cambios guardados se muestran automáticamente en la Web.</p></div><button class="btn btn-primary" id="saveWebContent" type="button"><i class="bi bi-floppy"></i> Guardar contenido</button></div>
         <div class="web-content-grid">
           <article class="web-content-block"><div class="web-content-block-head"><i class="bi bi-shield-check"></i><div><strong>Políticas</strong><small>Tarjetas visibles en la sección Políticas.</small></div></div><div class="form-grid">
             <label class="field-group"><span>Título · Privacidad</span><input id="wcPolicyPrivacyTitle" maxlength="120"></label><label class="field-group"><span>Título · Pedidos personalizados</span><input id="wcPolicyCustomTitle" maxlength="120"></label>
@@ -7988,7 +8291,7 @@ body > #requestClientEditor:not(.hidden) .editor-actions{
         </div>
 
         <div class="bulk-actions hidden" id="quotesBulkBar">
-          <div class="bulk-actions-info"><i class="bi bi-check2-square"></i><strong id="quotesSelectedCount">0 seleccionadas</strong><span>Se eliminarán también los PDF guardados en Supabase Storage cuando correspondan.</span></div>
+          <div class="bulk-actions-info"><i class="bi bi-check2-square"></i><strong id="quotesSelectedCount">0 seleccionadas</strong><span>Se eliminarán también los archivos asociados cuando corresponda.</span></div>
           <button class="btn btn-danger-soft" id="deleteSelectedQuotes" type="button"><i class="bi bi-trash3"></i> Eliminar seleccionadas</button>
         </div>
         <div class="table-wrap" id="quotesTable"></div>
@@ -8357,27 +8660,27 @@ body > #requestClientEditor:not(.hidden) .editor-actions{
     <section class="admin-view" id="view-reports">
       <div class="admin-card report-dashboard-card report-pro">
         <div class="card-head report-main-head">
-          <div><span class="eyebrow">Analítica comercial en vivo</span><h2>Ventas, demanda y clientes</h2><p class="report-subtitle">Solo considera ventas realmente pagadas. Los indicadores se calculan desde pedidos + detalle de productos, no desde datos visuales del cPanel.</p></div>
+          <div><span class="eyebrow">Analítica comercial en vivo</span><h2>Ventas, demanda y clientes</h2><p class="report-subtitle">Combina pedidos, ventas pagadas y facturación directa. Si todavía no existen pagos contabilizados, muestra la actividad operacional para que el reporte no quede vacío.</p></div>
           <div class="card-head-actions report-export-actions"><button class="btn btn-light" id="refreshReports" type="button"><i class="bi bi-arrow-clockwise"></i> Actualizar</button><button class="btn btn-light" id="exportSalesXlsx" type="button"><i class="bi bi-file-earmark-excel"></i> XLSX</button><button class="btn btn-light" id="exportSalesPdf" type="button"><i class="bi bi-file-earmark-pdf"></i> PDF</button></div>
         </div>
         <div class="report-filter-card">
-          <div class="report-filter-head"><div><span class="eyebrow">Filtros</span><h3>Período de ventas pagadas</h3><p>La fecha utilizada es la fecha efectiva de pago.</p></div><button class="btn btn-light report-reset-btn" id="resetReports" type="button"><i class="bi bi-arrow-counterclockwise"></i> Año actual</button></div>
+          <div class="report-filter-head"><div><span class="eyebrow">Filtros</span><h3>Período del reporte comercial</h3><p>Para ventas usa fecha de pago; para actividad usa la fecha del pedido o del DTE directo.</p></div><button class="btn btn-light report-reset-btn" id="resetReports" type="button"><i class="bi bi-arrow-counterclockwise"></i> Año actual</button></div>
           <div class="report-filters report-filters-pro">
             <label class="report-filter-field"><span>Desde</span><div class="report-input-shell"><i class="bi bi-calendar3"></i><input id="reportFrom" type="date"></div></label>
             <label class="report-filter-field"><span>Hasta</span><div class="report-input-shell"><i class="bi bi-calendar3"></i><input id="reportTo" type="date"></div></label>
-            <label class="report-filter-field"><span>Estado operativo</span><div class="report-input-shell"><i class="bi bi-funnel"></i><select id="reportOrderStatus"><option value="" selected>Todos los pedidos pagados</option><option value="PENDIENTE">Pedido recibido</option><option value="CONFIRMADO">Pedido aceptado</option><option value="EN PREPARACION">En preparación</option><option value="LISTO">Listo para entrega</option><option value="ENTREGADO">Entregado</option><option value="CANCELADO">Cancelado</option></select></div></label>
-            <label class="report-filter-field"><span>Ranking productos</span><div class="report-input-shell"><i class="bi bi-trophy"></i><select id="reportTopLimit"><option value="1">Top 1</option><option value="10" selected>Top 10</option><option value="20">Top 20</option><option value="50">Top 50</option></select></div></label>
+            <label class="report-filter-field"><span>Estado operativo</span><div class="report-input-shell"><i class="bi bi-funnel"></i><select id="reportOrderStatus"><option value="" selected>Todos los pedidos</option><option value="PENDIENTE">Pedido recibido</option><option value="CONFIRMADO">Pedido aceptado</option><option value="EN PREPARACION">En preparación</option><option value="LISTO">Listo para entrega</option><option value="ENTREGADO">Entregado</option><option value="CANCELADO">Cancelado</option></select></div></label>
+            <label class="report-filter-field"><span>Ranking productos</span><div class="report-input-shell"><i class="bi bi-trophy"></i><select id="reportTopLimit"><option value="1">Top 1</option><option value="10" selected>Top 10</option><option value="20">Top 20</option><option value="50">Top 50</option><option value="ALL">Todos</option></select></div></label>
             <button class="btn btn-primary report-apply-btn" id="applyReports" type="button"><i class="bi bi-funnel-fill"></i><span>Aplicar</span></button>
           </div>
-          <div class="report-filter-summary" id="reportFilterSummary"><i class="bi bi-info-circle"></i><span>Cargando ventas pagadas…</span></div>
+          <div class="report-filter-summary" id="reportFilterSummary"><i class="bi bi-info-circle"></i><span>Cargando información comercial…</span></div>
         </div>
 
         <div class="report-kpis report-kpis-pro">
-          <div class="report-kpi-card sales"><span class="report-kpi-icon"><i class="bi bi-cash-stack"></i></span><div><small>Ventas período</small><strong id="reportSalesTotal">$0</strong><em>Solo PAGADO</em></div></div>
-          <div class="report-kpi-card orders"><span class="report-kpi-icon"><i class="bi bi-bag-check"></i></span><div><small>Pedidos pagados</small><strong id="reportOrdersCount">0</strong><em>Período filtrado</em></div></div>
+          <div class="report-kpi-card sales"><span class="report-kpi-icon"><i class="bi bi-cash-stack"></i></span><div><small>Ventas contabilizadas</small><strong id="reportSalesTotal">$0</strong><em>Pagados + facturación directa</em></div></div>
+          <div class="report-kpi-card orders"><span class="report-kpi-icon"><i class="bi bi-bag-check"></i></span><div><small>Operaciones de venta</small><strong id="reportOrdersCount">0</strong><em>Pagados + directas</em></div></div>
           <div class="report-kpi-card clients"><span class="report-kpi-icon"><i class="bi bi-people"></i></span><div><small>Clientes compradores</small><strong id="reportClientsCount">0</strong><em>Únicos del período</em></div></div>
           <div class="report-kpi-card repeat"><span class="report-kpi-icon"><i class="bi bi-arrow-repeat"></i></span><div><small>Clientes recurrentes</small><strong id="reportRepeatClients">0</strong><em>Más de una compra</em></div></div>
-          <div class="report-kpi-card"><span class="report-kpi-icon"><i class="bi bi-receipt"></i></span><div><small>Ticket promedio</small><strong id="reportAvgTicket">$0</strong><em>Promedio por pedido</em></div></div>
+          <div class="report-kpi-card"><span class="report-kpi-icon"><i class="bi bi-receipt"></i></span><div><small>Ticket promedio</small><strong id="reportAvgTicket">$0</strong><em>Promedio por venta contabilizada</em></div></div>
           <div class="report-kpi-card"><span class="report-kpi-icon"><i class="bi bi-sun"></i></span><div><small>Ventas del día</small><strong id="reportTodaySales">$0</strong><em>Hoy</em></div></div>
           <div class="report-kpi-card"><span class="report-kpi-icon"><i class="bi bi-calendar2-month"></i></span><div><small>Ventas del mes</small><strong id="reportMonthSales">$0</strong><em>Mes en curso</em></div></div>
           <div class="report-kpi-card"><span class="report-kpi-icon"><i class="bi bi-trophy"></i></span><div><small>Producto N.º 1</small><strong id="reportTopProduct">—</strong><em id="reportTopProductMeta">Sin ventas</em></div></div>
@@ -8393,8 +8696,8 @@ body > #requestClientEditor:not(.hidden) .editor-actions{
           <div class="report-section-card"><div class="report-section-head"><div><span class="eyebrow">Ranking</span><h3 id="topProductsTitle">Top 10 productos</h3></div><span class="report-section-badge" id="topProductsBadge">0</span></div><div class="table-wrap report-table-wrap" id="topProductsTable"></div></div>
           <div class="report-section-card"><div class="report-section-head"><div><span class="eyebrow">Demanda</span><h3>Productos con alta demanda</h3></div><span class="report-section-badge">Últimos 30 días</span></div><div class="table-wrap report-table-wrap" id="highDemandTable"></div></div>
         </div>
-        <div class="report-section-card"><div class="report-section-head"><div><span class="eyebrow">Clientes</span><h3>Clientes por compras pagadas</h3></div><span class="report-section-badge" id="clientRowsBadge">0 clientes</span></div><div class="table-wrap report-table-wrap" id="clientReportTable"></div></div>
-        <div class="report-section-card"><div class="report-section-head"><div><span class="eyebrow">Ventas</span><h3>Detalle de ventas pagadas</h3></div><span class="report-section-badge" id="salesRowsBadge">0 registros</span></div><div class="table-wrap report-table-wrap" id="salesReportTable"></div></div>
+        <div class="report-section-card"><div class="report-section-head"><div><span class="eyebrow">Clientes</span><h3>Clientes por actividad comercial</h3></div><span class="report-section-badge" id="clientRowsBadge">0 clientes</span></div><div class="table-wrap report-table-wrap" id="clientReportTable"></div></div>
+        <div class="report-section-card"><div class="report-section-head"><div><span class="eyebrow">Ventas</span><h3>Detalle comercial del período</h3></div><span class="report-section-badge" id="salesRowsBadge">0 registros</span></div><div class="table-wrap report-table-wrap" id="salesReportTable"></div></div>
       </div>
     </section>
 
@@ -8438,18 +8741,18 @@ body > #requestClientEditor:not(.hidden) .editor-actions{
           <article class="integration-card"><div class="integration-provider"><i class="bi bi-whatsapp"></i><div><strong>WhatsApp Business Catalog</strong><small>Catálogo conversacional</small></div></div><label class="integration-toggle"><input id="iWhatsappCatalogEnabled" type="checkbox"><span>Activo</span></label><label class="field-group"><span>URL de catálogo</span><input id="iWhatsappCatalogUrl" type="url" placeholder="https://..."></label></article>
           <article class="integration-card"><div class="integration-provider"><i class="bi bi-box-seam"></i><div><strong>Jumpseller</strong><small>Ecommerce</small></div></div><label class="integration-toggle"><input id="iJumpsellerEnabled" type="checkbox"><span>Activo</span></label><label class="field-group"><span>URL de tienda / endpoint</span><input id="iJumpsellerUrl" type="url" placeholder="https://..."></label></article>
         </div>
-        <div class="integration-note"><i class="bi bi-shield-check"></i><span>Las URL quedan centralizadas en configuración. Las conexiones API que requieran credenciales deberán habilitarse con sus claves oficiales; no se guardan claves inventadas ni se simula una sincronización.</span></div>
+        <div class="integration-note"><i class="bi bi-shield-check"></i><span>Las conexiones externas se administran desde esta sección y utilizan únicamente credenciales oficiales.</span></div>
         <button class="btn btn-primary" id="saveIntegrations"><i class="bi bi-floppy"></i> Guardar integraciones</button>
       </div>
     </section>
 
     <section class="admin-view" id="view-payments">
       <div class="admin-card payment-gateway-shell">
-        <div class="card-head"><div><span class="eyebrow">Pagos online</span><h2>Pasarela de pago</h2><p class="module-help">Webpay Plus usa dos dominios configurables: el dominio donde vive el botón de pago y el dominio al que vuelve el cliente después de confirmar la transacción. El callback técnico hacia Supabase se genera automáticamente y no se edita.</p></div></div>
+        <div class="card-head"><div><span class="eyebrow">Pagos online</span><h2>Pasarela de pago</h2><p class="module-help">Webpay Plus utiliza la dirección de la tienda y la dirección de regreso del cliente. La conexión técnica se configura automáticamente.</p></div></div>
         <div class="payment-provider-card">
           <div class="payment-provider-head">
             <div class="payment-provider-logo"><i class="bi bi-credit-card-2-front"></i></div>
-            <div><strong>Transbank · Webpay Plus</strong><small>Integración REST · token_ws · confirmación automática</small></div>
+            <div><strong>Transbank · Webpay Plus</strong><small>Pago seguro · confirmación automática</small></div>
             <span class="gateway-status" id="transbankStatus">Verificando…</span>
           </div>
           <div class="gateway-runtime-grid">
@@ -8461,38 +8764,38 @@ body > #requestClientEditor:not(.hidden) .editor-actions{
             <label class="field-group span-2"><span>Dominio de tienda / botón de pago</span><input id="pTransbankCheckoutUrl" type="url" inputmode="url" autocomplete="off" placeholder="https://aleatencioreposteria.cl/" aria-describedby="transbankCheckoutHelp"></label>
             <div class="span-2 form-help" id="transbankCheckoutHelp">Es el dominio público donde está el carrito y el botón <b>Pagar con Transbank</b>. URL oficial de la tienda: <b>https://aleatencioreposteria.cl/</b>. Los enlaces de pago y retorno usan este dominio público.</div>
             <label class="field-group span-2"><span>Dominio de regreso después del pago</span><input id="pTransbankReturnUrl" type="url" inputmode="url" autocomplete="off" placeholder="https://aleatencioreposteria.cl/" aria-describedby="transbankReturnHelp"></label>
-            <div class="span-2 form-help" id="transbankReturnHelp">Después del commit de Webpay Plus, el backend redirige al cliente a esta dirección agregando el resultado del pago y el número de pedido. Debe ser una página de tu tienda; no uses aquí un enlace <b>webpay.cl/company/...</b>.</div>
+            <div class="span-2 form-help" id="transbankReturnHelp">Después de confirmar el pago, el sistema redirige al cliente a esta dirección con el resultado y el número de pedido. Debe ser una página de tu tienda; no uses aquí un enlace <b>webpay.cl/company/...</b>.</div>
             <label class="field-group span-2"><span>Link Webpay manual / alternativo</span><input id="pTransbankManualUrl" type="url" inputmode="url" autocomplete="off" placeholder="https://www.webpay.cl/company/..." aria-describedby="transbankManualHelp"></label>
             <div class="span-2 form-help" id="transbankManualHelp">Guarda aquí el enlace real de <b>Link y Botón de Pago</b> entregado por Transbank. Se conserva como alternativa manual y <b>no participa</b> en el flujo Webpay Plus del carrito.</div>
             <label class="field-group span-2"><span>Callback técnico Transbank → servidor</span><input id="pTransbankCallbackUrl" type="url" readonly aria-describedby="transbankCallbackHelp"></label>
-            <div class="span-2 form-help" id="transbankCallbackHelp">Se genera automáticamente desde Supabase con <b>/functions/v1/dynamic-processor?tbk_return=1</b>. No debes modificarlo ni copiarlo como dominio de regreso del cliente.</div>
+            <div class="span-2 form-help" id="transbankCallbackHelp">Se genera automáticamente por el sistema. No debes modificarlo ni usarlo como dirección de regreso del cliente.</div>
           </div>
-          <div class="integration-note transbank-secret-note"><i class="bi bi-shield-lock"></i><span><strong>Las credenciales no se guardan en el navegador ni en la base pública.</strong> En producción el servidor usa <code>TRANSBANK_COMMERCE_CODE</code> y <code>TRANSBANK_API_KEY_SECRET</code> como Secrets.</span></div>
+          <div class="integration-note transbank-secret-note"><i class="bi bi-shield-lock"></i><span><strong>Las credenciales se protegen en el servidor.</strong> No se muestran públicamente ni se almacenan en el navegador.</span></div>
 
           <div class="payment-secrets-panel" id="paymentSecretsPanel">
             <div class="payment-secrets-head">
-              <div><span class="eyebrow">Servidor seguro</span><h3>Credenciales y Secret Keys</h3><p>Agrega o reemplaza las claves de la pasarela directamente desde este cPanel. Después de guardar, el valor queda en el servidor y no vuelve a mostrarse en texto claro.</p></div>
+              <div><span class="eyebrow">Seguridad</span><h3>Credenciales de pago</h3><p>Administra las claves de la pasarela desde este panel. Después de guardar, los valores permanecen protegidos y no vuelven a mostrarse en texto claro.</p></div>
               <span class="secret-manager-status" id="paymentSecretsManagerStatus">Verificando…</span>
             </div>
             <div class="secret-bootstrap-note hidden" id="paymentSecretsBootstrap">
-              <i class="bi bi-key"></i><div><strong>Activación inicial única</strong><span>Para habilitar este gestor debes registrar una sola vez en Supabase el Secret <code>ALE_MANAGEMENT_TOKEN</code> con permisos de lectura/escritura de Edge Function Secrets. Después podrás administrar desde aquí las credenciales de pago sin volver al panel de Supabase.</span></div>
+              <i class="bi bi-key"></i><div><strong>Activación inicial única</strong><span>Para habilitar este gestor se requiere una configuración inicial única en el servidor. Una vez activado, las credenciales de pago se administran desde este panel.</span></div>
             </div>
             <div class="secret-editor-head"><span>Nombre</span><span>Valor</span><span></span></div>
             <div class="payment-secret-rows" id="paymentSecretRows"></div>
             <div class="payment-secret-toolbar">
               <button class="btn btn-light" id="addPaymentSecret" type="button"><i class="bi bi-plus-lg"></i> Agregar otra</button>
-              <button class="btn btn-primary" id="savePaymentSecrets" type="button"><i class="bi bi-shield-lock"></i> Guardar secretos</button>
+              <button class="btn btn-primary" id="savePaymentSecrets" type="button"><i class="bi bi-shield-lock"></i> Guardar credenciales</button>
               <button class="btn btn-light" id="refreshPaymentSecrets" type="button"><i class="bi bi-arrow-clockwise"></i> Actualizar lista</button>
             </div>
             <div class="stored-secrets-box">
-              <div class="stored-secrets-title"><strong>Secretos guardados en el servidor</strong><small>Los valores permanecen ocultos por seguridad.</small></div>
+              <div class="stored-secrets-title"><strong>Credenciales guardadas</strong><small>Los valores permanecen ocultos por seguridad.</small></div>
               <div id="paymentSecretsExisting" class="stored-secrets-list"><span class="secret-empty">Cargando…</span></div>
             </div>
-            <div class="integration-note secret-security-note"><i class="bi bi-shield-check"></i><span>Solo un usuario <strong>Administrador</strong> puede guardar o eliminar Secrets. No se permite administrar desde aquí <code>ALE_MANAGEMENT_TOKEN</code>, variables <code>SUPABASE_*</code> ni secretos internos del sistema.</span></div>
+            <div class="integration-note secret-security-note"><i class="bi bi-shield-check"></i><span>Solo un usuario <strong>Administrador</strong> puede guardar o eliminar credenciales. Las claves internas del sistema permanecen protegidas y no se administran desde esta pantalla.</span></div>
           </div>
 
           <div class="gateway-actions"><button class="btn btn-primary" id="savePayments"><i class="bi bi-floppy"></i> Guardar configuración</button><button class="btn btn-light" id="testTransbankLink" type="button"><i class="bi bi-shield-check"></i> Verificar Webpay Plus</button><button class="btn btn-light" id="openTransbankManualLink" type="button"><i class="bi bi-box-arrow-up-right"></i> Abrir Link Webpay manual</button></div>
-          <div class="gateway-flow"><span><b>1.</b> Pedido registrado</span><i class="bi bi-arrow-right"></i><span><b>2.</b> Backend crea transacción</span><i class="bi bi-arrow-right"></i><span><b>3.</b> Transbank entrega token_ws</span><i class="bi bi-arrow-right"></i><span><b>4.</b> Cliente paga</span><i class="bi bi-arrow-right"></i><span><b>5.</b> Backend confirma y marca PAGADO</span></div>
+          <div class="gateway-flow"><span><b>1.</b> Pedido registrado</span><i class="bi bi-arrow-right"></i><span><b>2.</b> Sistema inicia pago</span><i class="bi bi-arrow-right"></i><span><b>3.</b> Cliente paga en Transbank</span><i class="bi bi-arrow-right"></i><span><b>4.</b> Transbank confirma</span><i class="bi bi-arrow-right"></i><span><b>5.</b> Pedido queda PAGADO</span></div>
         </div>
       </div>
     </section>
@@ -8525,7 +8828,7 @@ body > #requestClientEditor:not(.hidden) .editor-actions{
           <label class="field-group"><span>Comuna</span><input id="fmComuna" placeholder="Comuna"></label>
           <label class="field-group"><span>Ciudad</span><input id="fmCiudad" placeholder="Ciudad"></label>
         </div>
-        <div class="folio-company-sync" id="folioCompanySync"><i class="bi bi-link-45deg"></i><span>La información tributaria se sincroniza con Facturación SII cuando esa Edge Function está configurada.</span></div>
+        <div class="folio-company-sync" id="folioCompanySync"><i class="bi bi-link-45deg"></i><span>La información tributaria se sincroniza con el servicio de Facturación SII cuando está habilitado.</span></div>
         <div class="editor-actions folio-company-actions"><button class="btn btn-primary" id="folioSaveCompany" type="button"><i class="bi bi-floppy"></i> Guardar parametrización</button></div>
       </div>
 
@@ -8614,7 +8917,7 @@ body > #requestClientEditor:not(.hidden) .editor-actions{
         <section class="fcl-credentials-manager hidden" id="billingFacturacionClCredentials" aria-label="Credenciales Facturacion.cl">
           <div class="fcl-credentials-head">
             <div>
-              <span class="eyebrow">API REST</span>
+              <span class="eyebrow">Integración</span>
               <h4>Conectar Facturacion.cl</h4>
               <p>Ingresa el <strong>RUT, login y clave</strong> entregados por el proveedor. La vista inicia en Producción; las credenciales DEMO permanecen ocultas hasta que las solicites.</p>
             </div>
@@ -8622,7 +8925,7 @@ body > #requestClientEditor:not(.hidden) .editor-actions{
               <i class="bi bi-flask"></i><span>Usar credenciales DEMO</span>
             </button>
           </div>
-          <div class="fcl-secret-bootstrap hidden" id="fclSecretBootstrap"><i class="bi bi-key"></i><div><strong>Activación inicial requerida</strong><span>Falta instalar el esquema base de integración Facturacion.cl (SQL 40). Revisa INSTALACION.txt; después podrás conectar el proveedor desde este cPanel.</span></div></div>
+          <div class="fcl-secret-bootstrap hidden" id="fclSecretBootstrap"><i class="bi bi-key"></i><div><strong>Activación inicial requerida</strong><span>Falta completar la configuración inicial de Facturacion.cl. Finaliza la instalación y luego conecta el proveedor desde este panel.</span></div></div>
           <div class="fcl-credential-grid fcl-single-grid">
             <article class="fcl-credential-card fcl-production-card" id="fclProduccionCard" data-fcl-env-card="PRODUCCION">
               <div class="fcl-credential-card-head">
@@ -8656,7 +8959,7 @@ body > #requestClientEditor:not(.hidden) .editor-actions{
                 <button class="btn btn-primary fcl-connect-main" type="button" data-fcl-credentials-save="PRUEBA"><i class="bi bi-flask-fill"></i> Conectar DEMO</button>
                 <button class="btn btn-light fcl-delete-credentials" type="button" data-fcl-credentials-delete="PRUEBA" title="Eliminar credenciales de prueba guardadas"><i class="bi bi-trash3"></i></button>
               </div>
-              <small class="fcl-credential-result" id="fclPruebaResult">Pulsa “Conectar DEMO” para validar el acceso contra la API REST de Facturacion.cl.</small>
+              <small class="fcl-credential-result" id="fclPruebaResult">Pulsa “Conectar DEMO” para validar la conexión con Facturacion.cl.</small>
             </article>
           </div>
           <div class="fcl-security-note"><i class="bi bi-shield-check"></i><span>La clave se guarda protegida en el servidor y no se vuelve a mostrar. El token REST se renueva cuando corresponde.</span></div>
@@ -8709,11 +9012,11 @@ body > #requestClientEditor:not(.hidden) .editor-actions{
         <label class="field-group"><span>Email emisor</span><input id="siiEmail" type="email" placeholder="facturacion@empresa.cl"></label>
         <label class="field-group"><span>N° resolución SII</span><input id="siiResolucionNumero" type="number" min="0" placeholder="0 en certificación"></label>
         <label class="field-group"><span>Fecha resolución</span><input id="siiResolucionFecha" type="date"></label>
-        <label class="field-group"><span>API Boleta 39/41</span><select id="siiBoletaApiEnabled"><option value="NO">Mantener solo PRUEBA LOCAL</option><option value="SI">Habilitar CERTIFICACIÓN / PRODUCCIÓN real</option></select></label>
+        <label class="field-group"><span>Boleta electrónica 39/41</span><select id="siiBoletaApiEnabled"><option value="NO">Desactivada</option><option value="SI">Habilitar emisión real</option></select></label>
         <label class="field-group"><span>Modelo de emisión Boleta declarado en SII</span><select id="siiBoletaEmissionModel"><option value="POR_DEFINIR">Por definir (bloquea emisión real)</option><option value="SIEMPRE_BOLETA">Siempre emito Boleta, incluso con pago electrónico</option><option value="VOUCHER_ES_BOLETA">Voucher/comprobante electrónico reemplaza Boleta en pago electrónico</option></select></label>
         <label class="field-group"><span>Formato predeterminado Boleta</span><select id="siiBoletaFormat"><option value="TICKET_57">Ticket 57 mm (mínimo SII)</option><option value="TICKET_58">Ticket 58 mm (térmica estándar)</option><option value="TICKET_80" selected>Ticket 80 mm (recomendado)</option><option value="A4">Hoja A4</option></select></label>
       </div>
-      <div class="editor-actions"><button class="btn btn-primary" id="siiSaveConfig" type="button"><i class="bi bi-floppy"></i> Guardar configuración</button><button class="btn btn-light" id="siiTestAuth" type="button"><i class="bi bi-shield-check"></i> Probar DTE clásico</button><button class="btn btn-light" id="siiTestBoletaAuth" type="button"><i class="bi bi-receipt-cutoff"></i> Probar API Boleta</button><button class="btn btn-light" type="button" data-sii-close>Cerrar</button></div>
+      <div class="editor-actions"><button class="btn btn-primary" id="siiSaveConfig" type="button"><i class="bi bi-floppy"></i> Guardar configuración</button><button class="btn btn-light" id="siiTestAuth" type="button"><i class="bi bi-shield-check"></i> Probar DTE clásico</button><button class="btn btn-light" id="siiTestBoletaAuth" type="button"><i class="bi bi-receipt-cutoff"></i> Probar boleta electrónica</button><button class="btn btn-light" type="button" data-sii-close>Cerrar</button></div>
     </div>
 
     <div class="editor hidden sii-modal" id="siiCertificateModal" role="dialog" aria-modal="true" aria-labelledby="siiCertificateModalTitle">
@@ -8776,9 +9079,9 @@ body > #requestClientEditor:not(.hidden) .editor-actions{
               <input id="siiManualMoveStock" type="checkbox" checked>
               <span class="sii-stock-copy">
                 <strong>Movimiento de stock</strong>
-                <small id="siiManualMoveStockText">TRUE · DESCUENTA STOCK · Al emitir este documento manual, se rebajará stock de la bodega seleccionada.</small>
+                <small id="siiManualMoveStockText">Descuenta stock · Al emitir este documento manual, se rebajará stock de la bodega seleccionada.</small>
               </span>
-              <b class="sii-stock-state" id="siiManualMoveStockState">TRUE</b>
+              <b class="sii-stock-state" id="siiManualMoveStockState">Sí</b>
             </label>
           </div>
           <div class="catalog-quick-picker" id="siiManualCatalogPicker">
@@ -8846,7 +9149,7 @@ body > #requestClientEditor:not(.hidden) .editor-actions{
 
     <div class="editor hidden sii-modal sii-exchange-modal" id="siiExchangeModal" role="dialog" aria-modal="true" aria-labelledby="siiExchangeModalTitle">
       <div class="editor-modal-head"><div><span class="eyebrow">Intercambio electrónico</span><h3 id="siiExchangeModalTitle">DTE recibidos de proveedores</h3><small>Importa EnvioDTE XML, registra la recepción y genera respuestas firmadas con el certificado activo.</small></div><button type="button" class="editor-close-x" data-sii-close aria-label="Cerrar">×</button></div>
-      <div class="integration-note"><i class="bi bi-shield-check"></i><span>El XML recibido se guarda cifrado en backend. Las respuestas se generan firmadas para intercambio/certificación. La recepción automática por correo queda habilitada al configurar el secreto servidor <strong>SII_DTE_INBOUND_SECRET</strong>.</span></div><div class="sii-issue-status span-2 warn" id="siiInboundStatus"><i class="bi bi-envelope-check"></i><span>Verificando recepción automática…</span></div>
+      <div class="integration-note"><i class="bi bi-shield-check"></i><span>Los documentos recibidos se protegen en el servidor y las respuestas se generan firmadas. La recepción automática por correo se habilita desde la configuración del servidor.</span></div><div class="sii-issue-status span-2 warn" id="siiInboundStatus"><i class="bi bi-envelope-check"></i><span>Verificando recepción automática…</span></div>
       <div class="sii-exchange-import"><div class="field-group file-field"><span>EnvioDTE XML o correo MIME/EML recibido</span><input id="siiExchangeFile" class="file-input" type="file" accept=".xml,.eml,.mime,text/xml,application/xml,message/rfc822"><label class="file-picker-btn" for="siiExchangeFile"><i class="bi bi-file-earmark-arrow-up"></i><span class="file-picker-text">Seleccionar archivo</span></label><small class="file-name">Sin archivo seleccionado</small></div><div class="editor-actions"><button class="btn btn-primary" id="siiExchangeImport" type="button"><i class="bi bi-cloud-arrow-up"></i> Importar DTE</button><button class="btn btn-light" id="siiExchangeRefresh" type="button"><i class="bi bi-arrow-clockwise"></i> Actualizar</button></div></div>
       <div class="table-wrap sii-table-wrap"><table class="sii-table"><thead><tr><th>Fecha</th><th>Emisor</th><th>DTE / Folio</th><th>Total</th><th>Firma</th><th>Recepción</th><th>Comercial</th><th>Acciones</th></tr></thead><tbody id="siiExchangeTable"></tbody></table></div>
       <div class="editor-actions"><button class="btn btn-light" type="button" data-sii-close>Cerrar</button></div>
@@ -8874,8 +9177,8 @@ body > #requestClientEditor:not(.hidden) .editor-actions{
         <div class="form-grid">
           <label class="field-group"><span>Nombre del negocio</span><input id="sBusiness" placeholder="Ale Atencio"></label>
           <label class="field-group"><span>RUT del negocio</span><input id="sBusinessRut" placeholder="12.345.678-5" inputmode="text"></label>
-          <label class="field-group span-2"><span>URL pública de la Web</span><input id="sPublicWebUrl" type="url" placeholder="https://aleatencioreposteria.cl/"><small>Esta es la única URL que se comparte con clientes por WhatsApp. Nunca uses aquí Supabase, Apps Script ni otra URL de backend.</small></label>
-          <label class="field-group span-2"><span>URL pública de documentos</span><input id="sDocumentsPublicUrl" type="url" placeholder="https://aleatencioreposteria.cl/documentos.html"><small>Todos los PDF, cartolas, DTE y comprobantes protegidos se abrirán bajo este dominio. Nunca configures aquí una URL de Supabase ni del servidor.</small></label>
+          <label class="field-group span-2"><span>URL pública de la Web</span><input id="sPublicWebUrl" type="url" placeholder="https://aleatencioreposteria.cl/"><small>Esta es la dirección pública que se comparte con clientes por WhatsApp. Usa únicamente la URL de tu sitio web.</small></label>
+          <label class="field-group span-2"><span>URL pública de documentos</span><input id="sDocumentsPublicUrl" type="url" placeholder="https://aleatencioreposteria.cl/documentos.html"><small>Los PDF, cartolas, DTE y comprobantes protegidos se abrirán bajo este dominio. Usa únicamente una dirección pública de tu sitio web.</small></label>
           <label class="field-group span-2"><span>URL de Eventos</span><input id="sEventsUrl" type="url" inputmode="url" placeholder="https://franciscoferraris.cl/"><small>El botón <strong>Eventos</strong> del header público abrirá esta dirección. Puedes cambiarla cuando quieras.</small></label>
           <label class="field-group"><span>WhatsApp</span><input id="sWhatsapp" placeholder="+56..."></label>
           <label class="field-group"><span>Correo</span><input id="sEmail" type="email" placeholder="correo@ejemplo.cl"></label>
@@ -8887,8 +9190,8 @@ body > #requestClientEditor:not(.hidden) .editor-actions{
           <label class="field-group"><span>IVA general del sistema (%)</span><input id="sIva" type="number" min="0" max="100" step="0.01" placeholder="19"><small>Este mismo porcentaje se usa en Cotizaciones, Pedidos y Facturación.</small></label>
           <label class="field-group"><span>Validez cotización (días)</span><input id="sQuoteValidity" type="number" min="1" max="365" placeholder="15"></label>
           <label class="field-group"><span>Formato de documentos</span><select id="sDocumentFormat"><option value="A4">A4</option><option value="TICKET_80">Ticket térmico · 80 mm de ancho</option><option value="TICKET_100">Ticket térmico · 100 mm de ancho</option></select><small>80/100 mm usan ancho fijo y largo automático según el contenido.</small></label>
-          <label class="stock-visibility-setting span-2" for="sShowStockClients"><span class="stock-visibility-copy"><strong>Mostrar stock a clientes</strong><small id="sShowStockClientsHint">FALSE: el stock queda oculto en la Web; el cliente ve producto, tamaño y precio.</small></span><span class="stock-policy-switch stock-visibility-switch"><input id="sShowStockClients" type="checkbox" aria-describedby="sShowStockClientsHint"><span class="stock-policy-slider" aria-hidden="true"></span></span><span class="stock-visibility-value is-false" id="sShowStockClientsValue">FALSE</span></label>
-          <label class="stock-visibility-setting span-2 no-stock-global-setting" for="sAllowNoStockSales"><span class="stock-visibility-copy"><strong>Permitir comprar sin stock · Web + Mayorista</strong><small id="sAllowNoStockSalesHint">FALSE: se respetará el stock disponible y se bloqueará una compra cuando no existan unidades suficientes.</small></span><span class="stock-policy-switch stock-visibility-switch"><input id="sAllowNoStockSales" type="checkbox" aria-describedby="sAllowNoStockSalesHint"><span class="stock-policy-slider" aria-hidden="true"></span></span><span class="stock-visibility-value is-false" id="sAllowNoStockSalesValue">FALSE</span></label>
+          <label class="stock-visibility-setting span-2" for="sShowStockClients"><span class="stock-visibility-copy"><strong>Mostrar stock a clientes</strong><small id="sShowStockClientsHint">El stock queda oculto en la Web; el cliente ve producto, tamaño y precio.</small></span><span class="stock-policy-switch stock-visibility-switch"><input id="sShowStockClients" type="checkbox" aria-describedby="sShowStockClientsHint"><span class="stock-policy-slider" aria-hidden="true"></span></span><span class="stock-visibility-value is-false" id="sShowStockClientsValue">Oculto</span></label>
+          <label class="stock-visibility-setting span-2 no-stock-global-setting" for="sAllowNoStockSales"><span class="stock-visibility-copy"><strong>Permitir comprar sin stock · Web + Mayorista</strong><small id="sAllowNoStockSalesHint">Se respetará el stock disponible y se bloqueará una compra cuando no existan unidades suficientes.</small></span><span class="stock-policy-switch stock-visibility-switch"><input id="sAllowNoStockSales" type="checkbox" aria-describedby="sAllowNoStockSalesHint"><span class="stock-policy-slider" aria-hidden="true"></span></span><span class="stock-visibility-value is-false" id="sAllowNoStockSalesValue">Bloqueado</span></label>
           <div class="span-2 form-help">Guarda aquí tus enlaces reales. La web mostrará únicamente WhatsApp y las redes sociales configuradas.</div>
           <div class="field-group file-field span-2" data-file-picker="image"><span>Logo del negocio · también se usa en los DTE</span><input id="sLogo" class="file-input" type="file" accept="image/*"><label class="file-picker-btn" for="sLogo"><i class="bi bi-image"></i><span class="file-picker-text">Seleccionar logo</span></label><small class="file-name">Sin archivo seleccionado</small></div>
         </div>
@@ -8980,6 +9283,10 @@ body > #requestClientEditor:not(.hidden) .editor-actions{
     <div class="editor hidden operational-modal movement-detail-editor" id="movementDetailEditor" role="dialog" aria-modal="true" aria-labelledby="movementDetailTitle">
       <div class="editor-modal-head"><div><span class="eyebrow" id="movementDetailEyebrow">Movimiento</span><h3 id="movementDetailTitle">Detalle del movimiento</h3><small id="movementDetailSubtitle">Información completa del registro seleccionado.</small></div><button type="button" class="editor-close-x" id="closeMovementDetail" aria-label="Cerrar">×</button></div>
       <div class="movement-detail-grid" id="movementDetailGrid"></div>
+      <section class="movement-stock-chart-section hidden" id="movementStockChartSection" aria-label="Evolución de stock">
+        <div class="movement-stock-chart-head"><div><span class="eyebrow">Evolución de stock</span><h4>Historial del producto y tamaño</h4></div><small id="movementStockChartMeta"></small></div>
+        <div class="movement-stock-chart" id="movementStockChart"></div>
+      </section>
       <div class="movement-detail-note hidden" id="movementDetailNote"></div>
       <div class="movement-detail-actions hidden" id="movementDetailActions"><button class="btn btn-primary" id="movementDetailPdf" type="button"><i class="bi bi-file-earmark-pdf"></i> Ver PDF del correlativo</button><button class="btn btn-danger hidden" id="movementDetailCancel" type="button"><i class="bi bi-x-octagon"></i> Anular correlativo</button></div>
       <div class="editor-actions"><button class="btn btn-light" id="closeMovementDetailBottom" type="button">Cerrar</button></div>
@@ -9006,5 +9313,5 @@ body > #requestClientEditor:not(.hidden) .editor-actions{
 </div>
 <div class="notification-toast-stack" id="notificationToastStack" aria-live="polite"></div>
 <div class="toast" id="adminToast"></div>
-<script src="./config.js?v=R9.18.178"></script><script src="./api.js?v=R9.18.184"></script><script src="./sii-api.js?v=R9.18.178"></script><script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script><script src="https://cdn.jsdelivr.net/npm/bwip-js@4.11.4/dist/bwip-js-min.js"></script><script src="./facturacion-api.js?v=R9.18.188"></script><script src="./cpanel.js?v=R9.18.217"></script><script src="./mantenedor-sistema.js?v=R9.18.182"></script>
+<script src="./config.js?v=R9.18.178"></script><script src="./api.js?v=R9.18.184"></script><script src="./sii-api.js?v=R9.18.178"></script><script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script><script src="https://cdn.jsdelivr.net/npm/bwip-js@4.11.4/dist/bwip-js-min.js"></script><script src="./facturacion-api.js?v=R9.18.188"></script><script src="./cpanel.js?v=R9.18.227"></script><script src="./mantenedor-sistema.js?v=R9.18.182"></script>
 </body></html>

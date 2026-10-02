@@ -6202,3 +6202,288 @@ body.dte-generation-busy{overflow:hidden!important}
 @keyframes dteSplashProgress{0%{transform:translateX(-110%)}50%{transform:translateX(90%)}100%{transform:translateX(280%)}}
 @media(max-width:520px){.dte-generation-card{padding:26px 20px 22px;border-radius:20px}.dte-generation-logo-wrap{width:94px;height:94px}.dte-generation-logo-wrap img{width:62px;height:62px}.dte-generation-card h3{font-size:19px}}
 @media(prefers-reduced-motion:reduce){.dte-generation-ring,.dte-generation-progress span{animation-duration:2.4s}}
+
+/* =========================================================
+   R9.18.224 · GRÁFICO KARDEX + REPORTES ROBUSTOS
+   ========================================================= */
+.inventory-trace-row{cursor:pointer;transition:background .16s ease,transform .16s ease}
+.inventory-trace-row:hover{background:#fff9f6!important}
+.movement-stock-chart-section{margin:8px 0 16px;padding:15px;border:1px solid #eadfd8;border-radius:16px;background:linear-gradient(180deg,#fff,#fdf9f6)}
+.movement-stock-chart-head{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;margin-bottom:10px}
+.movement-stock-chart-head h4{margin:0;color:#49372f;font-size:16px}.movement-stock-chart-head small{color:#88776f;text-align:right;font-size:10px;line-height:1.4}
+.movement-stock-chart{width:100%;min-height:250px;overflow:hidden}.movement-stock-chart svg{display:block;width:100%;height:auto;min-height:250px}
+.movement-stock-chart line{stroke:#eadfd9;stroke-width:1}.movement-stock-chart text{font:10px Manrope,system-ui,sans-serif;fill:#8b7970}
+.movement-stock-line{fill:none;stroke:#8d5060;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}.movement-stock-area{fill:rgba(141,80,96,.08)}
+.movement-stock-chart circle{fill:#fff;stroke:#8d5060;stroke-width:2}.movement-stock-chart circle.selected{fill:#8d5060;stroke:#fff;stroke-width:3;filter:drop-shadow(0 3px 5px rgba(89,45,56,.25))}
+.movement-chart-empty{min-height:220px;display:grid;place-items:center;text-align:center;color:#8b7970;border:1px dashed #dfd1ca;border-radius:12px;background:#fff}
+@media(max-width:720px){.movement-stock-chart-head{align-items:flex-start;flex-direction:column}.movement-stock-chart-head small{text-align:left}.movement-stock-chart{overflow-x:auto}.movement-stock-chart svg{min-width:680px}}
+
+/* =========================================================
+   R9.18.226 · CIERRE VISUAL FINAL
+   - Corrige checkbox "Producto destacado".
+   - Separa checkbox/radio de los estilos globales de inputs.
+   - Normaliza foco, overflow, acciones, tablas y responsive.
+   ========================================================= */
+.admin-body .admin-view,
+.admin-body .admin-card,
+.admin-body .card-head,
+.admin-body .card-head-actions,
+.admin-body .admin-toolbar,
+.admin-body .form-grid,
+.admin-body .form-grid > *,
+.admin-body .table-wrap,
+.admin-body [role="dialog"],
+.admin-body [role="dialog"] > *,
+.admin-body [role="dialog"] .field-group{
+  min-width:0 !important;
+}
+
+.admin-body .row-actions,
+.admin-body .card-head-actions,
+.admin-body .editor-actions{
+  flex-wrap:wrap !important;
+}
+
+.admin-body .btn,
+.admin-body .row-actions button{
+  max-width:100%;
+}
+
+.admin-body .btn > span,
+.admin-body .btn > i{
+  min-width:0;
+}
+
+.admin-body .table-wrap{
+  scrollbar-width:thin;
+  scrollbar-color:#c7cdd3 transparent;
+}
+.admin-body .table-wrap::-webkit-scrollbar{height:9px;width:9px}
+.admin-body .table-wrap::-webkit-scrollbar-thumb{background:#c7cdd3;border-radius:999px}
+.admin-body .table-wrap::-webkit-scrollbar-track{background:transparent}
+
+/* Checkboxes nativos que deben conservar dimensiones reales. */
+#inventoryImportForce,
+#fclReviewConfirmed,
+#systemResetConsent{
+  appearance:auto !important;
+  -webkit-appearance:checkbox !important;
+  width:18px !important;
+  min-width:18px !important;
+  max-width:18px !important;
+  height:18px !important;
+  min-height:18px !important;
+  max-height:18px !important;
+  padding:0 !important;
+  margin:0 !important;
+  border:initial !important;
+  border-radius:3px !important;
+  background:initial !important;
+  box-shadow:none !important;
+  accent-color:#5d463e !important;
+  flex:0 0 18px !important;
+}
+.inventory-force-row{align-items:flex-start !important}
+#fclReviewModal .field-group > span:has(#fclReviewConfirmed){
+  display:flex !important;
+  align-items:flex-start !important;
+  gap:9px !important;
+  line-height:1.45 !important;
+}
+
+/* Producto destacado: switch estable en desktop/tablet/móvil. */
+.product-featured-control{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  gap:16px !important;
+  width:100% !important;
+  margin:14px 0 0 !important;
+  padding:13px 14px !important;
+  border:1px solid #dfe4e8 !important;
+  border-radius:12px !important;
+  background:#f8fafb !important;
+  color:#26313d !important;
+  cursor:pointer !important;
+  transition:border-color .18s ease,background .18s ease,box-shadow .18s ease !important;
+}
+.product-featured-control:hover{
+  border-color:#c9d0d7 !important;
+  background:#fff !important;
+}
+.product-featured-control:has(#pFeatured:checked){
+  border-color:#c9b7af !important;
+  background:#fffaf7 !important;
+  box-shadow:0 0 0 3px rgba(93,70,62,.05) !important;
+}
+.product-featured-copy{
+  display:grid !important;
+  gap:3px !important;
+  min-width:0 !important;
+}
+.product-featured-copy strong{
+  font-size:12px !important;
+  line-height:1.25 !important;
+  font-weight:850 !important;
+  color:#334155 !important;
+}
+.product-featured-copy small{
+  display:block !important;
+  font-size:10.5px !important;
+  line-height:1.35 !important;
+  font-weight:600 !important;
+  color:#7a8794 !important;
+}
+.product-featured-switch{
+  position:relative !important;
+  display:inline-flex !important;
+  width:48px !important;
+  min-width:48px !important;
+  height:26px !important;
+  flex:0 0 48px !important;
+}
+.admin-body #productEditor .product-featured-switch #pFeatured[type="checkbox"]{
+  position:absolute !important;
+  inset:0 !important;
+  width:1px !important;
+  min-width:1px !important;
+  max-width:1px !important;
+  height:1px !important;
+  min-height:1px !important;
+  max-height:1px !important;
+  padding:0 !important;
+  margin:0 !important;
+  border:0 !important;
+  opacity:0 !important;
+  pointer-events:none !important;
+  box-shadow:none !important;
+}
+.product-featured-slider{
+  position:absolute !important;
+  inset:0 !important;
+  border-radius:999px !important;
+  background:#cbd3da !important;
+  box-shadow:inset 0 0 0 1px rgba(15,23,42,.05) !important;
+  transition:background .18s ease,box-shadow .18s ease !important;
+}
+.product-featured-slider::after{
+  content:"" !important;
+  position:absolute !important;
+  top:3px !important;
+  left:3px !important;
+  width:20px !important;
+  height:20px !important;
+  border-radius:50% !important;
+  background:#fff !important;
+  box-shadow:0 2px 6px rgba(15,23,42,.22) !important;
+  transition:transform .18s ease !important;
+}
+#pFeatured:checked + .product-featured-slider{
+  background:#5d463e !important;
+}
+#pFeatured:checked + .product-featured-slider::after{
+  transform:translateX(22px) !important;
+}
+.product-featured-control:focus-within .product-featured-slider{
+  box-shadow:0 0 0 3px rgba(93,70,62,.16) !important;
+}
+
+/* Controles y acciones: no desbordar en resoluciones intermedias. */
+.admin-body .admin-toolbar > input,
+.admin-body .admin-toolbar > select,
+.admin-body .admin-toolbar > button,
+.admin-body .card-head-actions > *{
+  min-width:0;
+}
+.admin-body input,
+.admin-body select,
+.admin-body textarea{
+  max-width:100%;
+}
+.admin-body .field-group,
+.admin-body .field-group > span,
+.admin-body .field-group > small,
+.admin-body .admin-table td,
+.admin-body .admin-table th{
+  overflow-wrap:anywhere;
+}
+
+/* Foco visible accesible sin alterar el diseño. */
+.admin-body button:focus-visible,
+.admin-body a:focus-visible,
+.admin-body select:focus-visible,
+.admin-body input:focus-visible,
+.admin-body textarea:focus-visible,
+.product-featured-control:focus-within{
+  outline:2px solid rgba(93,70,62,.38) !important;
+  outline-offset:2px !important;
+}
+
+/* Producto: edición estable y acciones visibles. */
+#productEditor .product-editor-fields{overflow:visible !important}
+#productEditor .editor-actions{
+  backdrop-filter:blur(5px);
+  -webkit-backdrop-filter:blur(5px);
+}
+#productEditor .file-field{
+  min-width:0 !important;
+}
+#productEditor .file-name,
+#productEditor .current-product-image{
+  max-width:100% !important;
+}
+
+/* Ajustes finales móvil/tablet. */
+@media(max-width:760px){
+  .admin-body .admin-toolbar{
+    width:100% !important;
+    align-items:stretch !important;
+  }
+  .admin-body .admin-toolbar > input,
+  .admin-body .admin-toolbar > select,
+  .admin-body .admin-toolbar > button{
+    width:100% !important;
+  }
+  .admin-body .card-head-actions{
+    align-items:stretch !important;
+  }
+  .admin-body .card-head-actions > .btn,
+  .admin-body .card-head-actions > a.btn{
+    min-width:0 !important;
+  }
+  .product-featured-control{
+    padding:12px !important;
+    gap:12px !important;
+  }
+}
+@media(max-width:480px){
+  .product-featured-control{
+    align-items:flex-start !important;
+  }
+  .product-featured-switch{
+    margin-top:1px !important;
+  }
+  .admin-body .editor-actions .btn{
+    width:100% !important;
+    flex:1 1 100% !important;
+  }
+}
+
+
+/* =========================================================
+   R9.18.227 · MODO PRODUCCIÓN VISUAL
+   ========================================================= */
+:root{--prod-radius:14px;--prod-line:#e6e9ed;--prod-shadow:0 14px 36px rgba(39,45,52,.08)}
+.admin-body .admin-card,.admin-body .editor,.admin-body [role="dialog"]{box-shadow:var(--prod-shadow)}
+.admin-body .admin-card,.admin-body .editor{border-color:var(--prod-line)}
+.admin-body input:not([type="checkbox"]):not([type="radio"]),.admin-body select,.admin-body textarea{transition:border-color .18s ease,box-shadow .18s ease,background .18s ease}
+.admin-body input:not([type="checkbox"]):not([type="radio"]):focus,.admin-body select:focus,.admin-body textarea:focus{border-color:#b9a49b!important;box-shadow:0 0 0 3px rgba(93,70,62,.08)!important;background:#fff!important}
+.admin-body .btn{transition:transform .12s ease,box-shadow .18s ease,background .18s ease,border-color .18s ease}
+@media(hover:hover){.admin-body .btn:not(:disabled):hover{transform:translateY(-1px)}}
+.admin-body .module-help,.admin-body .field-hint,.admin-body .form-help{line-height:1.5}
+.current-product-image{margin-top:7px!important;padding:7px 9px!important;border:1px solid #e8ecef!important;border-radius:10px!important;background:#f8fafb!important;color:#596673!important;gap:8px!important}
+.image-source-copy{font-size:11px!important;font-weight:700!important;color:#53606d!important}
+.image-source-badge,.image-source-badge.local,.image-source-badge.supabase,.image-source-badge.remote,.image-source-badge.published,.image-source-badge.ready{padding:4px 8px!important;border-radius:999px!important;background:#eef7f1!important;color:#2f6b47!important;border:1px solid #d3eadb!important;font-size:10.5px!important;font-weight:800!important}
+.stock-visibility-value{min-width:72px!important;text-align:center!important;text-transform:none!important;letter-spacing:0!important}.sii-stock-state{text-transform:none!important;letter-spacing:0!important}
+@media(max-width:760px){.admin-body [role="dialog"],.admin-body .editor{border-radius:18px!important}.current-product-image{align-items:flex-start!important}.image-source-copy{white-space:normal!important;overflow-wrap:anywhere!important}}
+@media(max-width:480px){.admin-body .btn,.admin-body button,.admin-body select,.admin-body input:not([type="checkbox"]):not([type="radio"]){min-height:44px}.admin-body .admin-card{padding-left:16px!important;padding-right:16px!important}}

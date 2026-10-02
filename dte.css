@@ -14,3 +14,9 @@
 
 /* R9.18.197 · logo DTE proporcional */
 .brand-logo{width:auto !important;height:auto !important;max-width:150px !important;max-height:48px !important;object-fit:contain !important;aspect-ratio:auto !important}
+
+
+/* R9.18.227 · Producción visual */
+:focus-visible{outline:2px solid rgba(111,70,80,.42);outline-offset:2px}
+button,a,input,select,textarea{-webkit-tap-highlight-color:transparent}
+@media(max-width:600px){button,input,select{min-height:44px}}
