@@ -1,2 +1,2 @@
-ALE ATENCIO R9.18.205
-Autocompletado del receptor por RUT en Emitir documento usando la base de Clientes. Completa razón social, giro, dirección, comuna y ciudad sin cambiar la emisión tributaria.
+R9.18.216
+Splash moderno durante la emisión final de documentos tributarios.
