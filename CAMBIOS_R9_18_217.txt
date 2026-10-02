@@ -1,0 +1,17 @@
+ALE ATENCIO R9.18.217
+
+1. Dashboard / mapa:
+- Completa comuna, ciudad y dirección desde Clientes cuando el pedido antiguo/mayorista no las trae.
+- Reconoce nombres y alias de regiones (incluida Región Metropolitana/RM) y comunas dentro de textos compuestos.
+- Las ventas directas Facturacion.cl se georreferencian por RUT normalizado del cliente.
+
+2. Portal Mayorista:
+- Facturación ahora combina DTE de Facturación Propia/SII y Facturacion.cl.
+- Se asocian por pedido, cliente o RUT del mayorista.
+- Los DTE Facturacion.cl emitidos aparecen también en Documentos.
+- PDF Facturacion.cl se entrega mediante enlace firmado del sistema usando urlOriginal del proveedor, sin exponer credenciales.
+
+Instalación:
+- No requiere SQL.
+- Reemplazar archivos web.
+- Volver a desplegar dynamic-processor.

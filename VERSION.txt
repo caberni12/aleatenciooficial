@@ -1,2 +1,2 @@
-R9.18.216
-Splash moderno durante la emisión final de documentos tributarios.
+R9.18.219
+Multi-DTE por pedido en Portal Mayorista + foto de perfil proporcional

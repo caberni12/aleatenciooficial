@@ -1,0 +1,9 @@
+ALE ATENCIO R9.18.218
+
+- El Portal Mayorista genera siempre un enlace protegido para DTE Facturacion.cl.
+- Si el link guardado por el proveedor no existe o expiró, dynamic-processor obtiene el PDF nuevamente por /wsds/obtenerpdf usando credenciales del servidor/Vault.
+- Las credenciales de Facturacion.cl nunca se exponen al navegador del cliente.
+- Facturas, boletas, guías y notas pueden abrir su PDF desde Facturación y Documentos.
+- Los DTE sin pedido asociado se muestran como “Facturación directa”.
+- Se agrega Guía de despacho 52 al filtro y listado tributario Mayorista.
+- No requiere SQL nuevo. Requiere desplegar dynamic-processor y actualizar mayoristas.html/js.

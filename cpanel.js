@@ -1,3 +1,4 @@
+// ALE ATENCIO R9.18.217 · Mapa regional robusto + facturación mayorista Facturacion.cl
 // ALE ATENCIO R9.18.215 · Emisión manual directa 33/34/39/41/52
 // ALE ATENCIO R9.18.205 · Receptor DTE autocompleta por RUT desde Clientes
 // ALE ATENCIO R9.18.129 · sidebar cache isolation
@@ -914,7 +915,42 @@ const DASH_REGIONS=[
 const DASH_REGION_COLORS=["#f3dfb6","#eac06c","#d89d3a","#b9761c","#855016"];
 const dashNorm=s=>String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim();
 const DASH_COMMUNE_REGION=new Map();for(const [region,communes] of DASH_REGIONS)for(const c of communes)DASH_COMMUNE_REGION.set(dashNorm(c),region);
-function dashRegionOf(value){const n=dashNorm(value);if(!n)return"Sin región";if(DASH_COMMUNE_REGION.has(n))return DASH_COMMUNE_REGION.get(n);for(const [k,r] of DASH_COMMUNE_REGION){if(n===k||n.includes(k)||k.includes(n))return r}return"Sin región"}
+const DASH_COMMUNE_KEYS=[...DASH_COMMUNE_REGION.keys()].sort((a,b)=>b.length-a.length);
+const DASH_REGION_ALIAS=new Map();
+for(const [region] of DASH_REGIONS){
+  const n=dashNorm(region);DASH_REGION_ALIAS.set(n,region);DASH_REGION_ALIAS.set(dashNorm(`Región ${region}`),region);DASH_REGION_ALIAS.set(dashNorm(`Región de ${region}`),region);
+}
+[
+  ["Metropolitana",["Región Metropolitana de Santiago","Metropolitana de Santiago","RM"]],
+  ["O'Higgins",["Región del Libertador General Bernardo O'Higgins","Libertador General Bernardo O'Higgins","O Higgins","Ohiggins"]],
+  ["La Araucanía",["Araucanía","Region de la Araucania"]],
+  ["Aysén",["Aysen del General Carlos Ibáñez del Campo","Región de Aysén"]],
+  ["Magallanes",["Magallanes y de la Antártica Chilena","Región de Magallanes"]],
+  ["Biobío",["Bio Bio","Bío Bío","Región del Biobío"]],
+  ["Ñuble",["Nuble","Región de Ñuble"]],
+  ["Los Ríos",["Los Rios","Región de Los Ríos"]],
+  ["Los Lagos",["Región de Los Lagos"]],
+  ["Arica y Parinacota",["Región de Arica y Parinacota"]],
+  ["Tarapacá",["Región de Tarapacá"]],
+  ["Antofagasta",["Región de Antofagasta"]],
+  ["Atacama",["Región de Atacama"]],
+  ["Coquimbo",["Región de Coquimbo"]],
+  ["Valparaíso",["Región de Valparaíso"]],
+  ["Maule",["Región del Maule"]]
+].forEach(([region,aliases])=>aliases.forEach(a=>DASH_REGION_ALIAS.set(dashNorm(a),region)));
+const DASH_REGION_ALIAS_KEYS=[...DASH_REGION_ALIAS.keys()].sort((a,b)=>b.length-a.length);
+function dashRegionOf(value){
+  const n=dashNorm(value);if(!n)return"Sin región";
+  if(DASH_REGION_ALIAS.has(n))return DASH_REGION_ALIAS.get(n);
+  if(DASH_COMMUNE_REGION.has(n))return DASH_COMMUNE_REGION.get(n);
+  for(const k of DASH_COMMUNE_KEYS){if(k.length>=4&&(` ${n} `).includes(` ${k} `))return DASH_COMMUNE_REGION.get(k)}
+  for(const k of DASH_REGION_ALIAS_KEYS){if(k.length>=5&&(` ${n} `).includes(` ${k} `))return DASH_REGION_ALIAS.get(k)}
+  return"Sin región";
+}
+function dashRegionOfRow(o={}){
+  const explicit=dashRegionOf(o.region||o.region_nombre||o.region_cliente||"");if(explicit!=="Sin región")return explicit;
+  return dashRegionOf([o.comuna,o.ciudad,o.direccion,o.receptor_comuna,o.receptor_ciudad].filter(Boolean).join(" | "));
+}
 let dashboardAnalytics=null,dashboardRange="year",dashboardBound=false,dashboardLoading=false;
 function dashDateRange(range=dashboardRange){const now=new Date(),end=new Date(now),start=new Date(now),fmt=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;start.setHours(0,0,0,0);if(range==="today"){}else if(range==="7d")start.setDate(start.getDate()-6);else if(range==="30d")start.setDate(start.getDate()-29);else if(range==="month")start.setDate(1);else{start.setMonth(0,1)}return{from:fmt(start),to:fmt(end)}}
 function dashNumber(v){return Number(v||0).toLocaleString("es-CL")}
@@ -922,7 +958,7 @@ function dashMoney(v){return money(Number(v||0))}
 function dashSafeText(v){return esc(String(v??""))}
 function dashboardFilterRows(source){
   const region=$("#dashRegionFilter")?.value||"",commune=$("#dashCommuneFilter")?.value||"",channel=$("#dashChannelFilter")?.value||"",type=$("#dashSaleTypeFilter")?.value||"";
-  const rows=(source||[]).map(o=>({...o,_region:dashRegionOf(o.comuna||o.ciudad)}));
+  const rows=(source||[]).map(o=>({...o,_region:dashRegionOfRow(o)}));
   return rows.filter(o=>(!region||o._region===region)&&(!commune||dashNorm(o.comuna)===dashNorm(commune))&&(!channel||String(o.origen||o.canal||"WEB").toUpperCase()===channel)&&(!type||(type==="MAYORISTA"?String(o.tipo_venta||o.origen||"").toUpperCase().includes("MAYORISTA"):!String(o.tipo_venta||o.origen||"").toUpperCase().includes("MAYORISTA"))));
 }
 function dashboardFilterOrders(){return dashboardFilterRows(dashboardAnalytics?.all_orders||dashboardAnalytics?.sales_orders||[])}
@@ -971,7 +1007,7 @@ function renderModernDashboardLocal(){if(!dashboardAnalytics)return;
   const orderCommuneCounts=new Map(dashGroup(orderRows,o=>String(o.comuna||"Sin comuna").trim()||"Sin comuna").map(x=>[x.name,x.value]));dashSet("#dashKpiTopCommuneMeta",communes[0]?`${dashNumber(orderCommuneCounts.get(communes[0].name)||0)} pedidos · ${dashMoney(communes[0].value)}`:"Sin ventas");
   const allSales=dashboardAnalytics.sales_entries||dashboardAnalytics.sales_orders||[],allOrders=dashboardAnalytics.all_orders||dashboardAnalytics.sales_orders||[];dashSet("#dashChileTotal",dashMoney(allSales.reduce((a,o)=>a+Number(o.total||0),0)));dashSet("#dashChileOrders",`${dashNumber(allOrders.length)} pedidos`);
   dashSet("#dashRegionTitle",region?`Región: ${region}`:"Todo Chile");dashSet("#dashRegionSales",dashMoney(sales));dashSet("#dashRegionOrders",dashNumber(orders));dashSet("#dashRegionTicket",dashMoney(ticket));dashSet("#dashCommuneChartTitle",region?`Ventas por Comuna · ${region}`:"Ventas por Comuna");
-  renderDashBars(salesRows);renderDashLine();renderDashMap((dashboardAnalytics.sales_entries||dashboardAnalytics.sales_orders||[]).map(o=>({...o,_region:dashRegionOf(o.comuna||o.ciudad)})));renderDashRanking("#dashCommuneChart",communes,{moneyValue:true,onClick:name=>{if($("#dashCommuneFilter")){ $("#dashCommuneFilter").value=name; renderModernDashboardLocal(); }}});
+  renderDashBars(salesRows);renderDashLine();renderDashMap((dashboardAnalytics.sales_entries||dashboardAnalytics.sales_orders||[]).map(o=>({...o,_region:dashRegionOfRow(o)})));renderDashRanking("#dashCommuneChart",communes,{moneyValue:true,onClick:name=>{if($("#dashCommuneFilter")){ $("#dashCommuneFilter").value=name; renderModernDashboardLocal(); }}});
   const topHost=$("#dashTopCommunes");if(topHost)topHost.innerHTML=communes.slice(0,5).map((x,i)=>`<div class="dash-commune-item" data-name="${dashSafeText(x.name)}"><span>${i+1}</span><div><strong>${dashSafeText(x.name)}</strong><small>${dashNumber(orderCommuneCounts.get(x.name)||0)} pedidos</small></div><b>${dashMoney(x.value)}</b></div>`).join("")||'<div class="dash-empty">Sin datos</div>';topHost?.querySelectorAll('.dash-commune-item').forEach(el=>el.addEventListener('click',()=>{const name=el.dataset.name||"",r=dashRegionOf(name);if($("#dashRegionFilter"))$("#dashRegionFilter").value=r==='Sin región'?"":r;dashboardRegionChanged();if($("#dashCommuneFilter"))$("#dashCommuneFilter").value=name;renderModernDashboardLocal()}));
   const products=(dashboardAnalytics.top_products||[]).map(x=>({name:x.producto_nombre||"Producto",value:Number(x.cantidad||0)}));renderDashRanking("#dashTopProducts",products,{moneyValue:false,limit:5});
   const prodTitle=$("#dashTopProductsTitle");if(prodTitle)prodTitle.textContent=dashboardAnalytics.top_products_basis==="PAGADO"?"Top Productos Más Vendidos":"Top Productos en Pedidos";

@@ -633,3 +633,17 @@ body.wh-modal-open{overflow:hidden}
 .wh-order-card .table-wrap{width:100%;max-width:100%;overflow-x:auto}
 @media(max-width:720px){.wh-product-card,.wh-order-card{max-width:100vw !important}}
 @media(max-width:560px){.brand img{max-width:118px !important;max-height:44px !important}}
+
+
+/* R9.18.219 · Multi-DTE por pedido + foto de perfil proporcional */
+.wh-header-avatar,.profile-photo-card img{object-fit:contain!important;object-position:center!important;background:#fff!important}
+.wh-header-avatar{padding:2px}
+.profile-photo-card img{padding:4px}
+.order-tax-docs{display:flex;flex-wrap:wrap;gap:6px;min-width:190px;max-width:360px}
+.order-tax-link{display:inline-flex;align-items:center;gap:5px;padding:6px 8px;border:1px solid #dfd2cc;border-radius:9px;background:#fff;color:#6d4650;text-decoration:none;font-size:10px;font-weight:800;white-space:nowrap}
+.order-tax-link:hover{background:#f8f0ed;border-color:#cfb9b0}.order-tax-link i{font-size:13px}.order-tax-link b{font-size:10px;color:#4b403b}.order-tax-link.pending{opacity:.66;cursor:default}.order-tax-empty{font-size:11px;color:#9b8d86;white-space:nowrap}
+.order-detail-tax-docs{display:grid;gap:8px;margin:0 0 14px}
+.order-detail-tax-docs article{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 13px;border:1px solid #eadfd9;border-radius:12px;background:#fff}
+.order-detail-tax-main{display:grid;gap:2px;min-width:0}.order-detail-tax-main span{font-size:11px;color:#8d5060;font-weight:900;text-transform:uppercase;letter-spacing:.035em}.order-detail-tax-main strong{font-size:14px;color:#3f3632}.order-detail-tax-main small{font-size:10px;color:#8b7e78}
+.order-detail-tax-docs a{display:inline-flex;align-items:center;gap:6px;text-decoration:none;background:#6f4650;color:#fff;padding:8px 10px;border-radius:9px;font-weight:800;font-size:11px;white-space:nowrap}.tax-doc-count{display:inline-grid;place-items:center;min-width:22px;height:22px;padding:0 6px;border-radius:999px;background:#f4ece9;color:#6f4650;font:800 11px Manrope,system-ui,sans-serif;vertical-align:3px}.empty-state.compact{padding:14px;font-size:12px}
+@media(max-width:720px){.order-tax-docs{min-width:150px;max-width:260px}.order-detail-tax-docs article{align-items:flex-start;flex-direction:column}.order-detail-tax-docs a{width:100%;justify-content:center}}
