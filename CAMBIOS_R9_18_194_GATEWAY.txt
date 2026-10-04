@@ -1,0 +1,15 @@
+ALE ATENCIO R9.18.194 — FIX VERSION GATEWAY FACTURACION.CL
+
+Problema corregido:
+- El frontend R9.18.193 exigía exactamente ALE-FACTURACION-CL-GATEWAY-R9.18.185.
+- Un gateway más nuevo (por ejemplo R9.18.191) era rechazado al emitir boleta/factura.
+
+Solución:
+- La validación ahora acepta gateways compatibles R9.18.185 o superiores dentro de la línea R9.18.x.
+- Se eliminó el mensaje engañoso que pedía actualizar el gateway a R9.18.185.
+- El SQL 40 conserva internamente su versión R9.18.185 porque corresponde al esquema base de integración; no representa la versión actual de la aplicación.
+
+Actualización requerida:
+- Reemplazar facturacion-api.js y cpanel.html.
+- No ejecutar SQL.
+- No redeploy de Edge Functions si ya tienes facturacion-cl-gateway R9.18.191 o superior.

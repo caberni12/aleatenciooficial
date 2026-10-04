@@ -1,0 +1,16 @@
+ALE ATENCIO R9.18.195
+
+CORRECCIONES
+- Facturacion.cl continúa recibiendo y emitiendo el DTE por la integración REST existente, sin cambios en login, token, payload tributario ni folios.
+- El botón Ticket 80 mm ya no depende de /wsds/getticket ni de FETICKET/BETICKET.
+- Después de una emisión válida, la plataforma regenera y abre el Ticket 80 mm interno del pedido usando el formato documental ya configurado.
+- El ticket interno mantiene el logo y los datos comerciales de la plataforma y deja explícito que no reemplaza el documento tributario.
+- El PDF oficial de Facturacion.cl ya no se fuerza dentro de un contenedor de 80 mm: conserva siempre su tamaño original.
+- Si no puede generarse el ticket interno, se abre el PDF oficial en su tamaño original y se informa el problema.
+- Desde Historial, Ticket 80 mm regenera el ticket interno asociado al pedido. El botón PDF sigue abriendo Original/Cedible de Facturacion.cl.
+
+ACTUALIZACIÓN
+- Reemplazar cpanel.js y cpanel.html.
+- No requiere SQL.
+- No requiere redeploy de Edge Functions.
+- No modificar credenciales Facturacion.cl.

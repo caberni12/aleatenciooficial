@@ -1,0 +1,15 @@
+ALE ATENCIO R9.18.225
+
+CORRECCIÓN DTE 56/61 Y REFERENCIAS
+- Nota de Crédito 61 y Nota de Débito 56 ahora validan que el documento referenciado exista en el mismo pedido.
+- Tipo DTE, folio y fecha de referencia se canonizan desde el documento original guardado.
+- El RUT receptor de la Nota se fuerza al RUT receptor del DTE original, evitando el rechazo Facturacion.cl por RUT distinto.
+- Se consideran documentos emitidos por Facturacion.cl y Facturación Propia para localizar la referencia.
+- La vista de pedido precarga automáticamente el DTE original para Notas 56/61.
+- Facturación propia corrige el tratamiento exento de Notas referidas a DTE 34/41.
+- Código de referencia 2 genera corrección de texto con monto 0; código 3 usa monto_nota y valida el máximo en Nota de Crédito.
+- Los detalles exentos incorporan IndExe=1.
+- Pedidos cancelados siguen bloqueados para ventas, pero permiten Notas 56/61 contra el documento original.
+
+SEGURIDAD
+- El backend no confía en un RUT/fólio escrito manualmente para una Nota: resuelve la referencia contra documentos del pedido.
